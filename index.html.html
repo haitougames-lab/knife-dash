@@ -1,0 +1,3593 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <title>Knife Dash — Haitou Games</title>
+  <meta name="description" content="Knife Dash — An HTML5 arcade knife-throwing game by Haitou Games." />
+  <meta property="og:title" content="Knife Dash — Haitou Games" />
+  <meta property="og:description" content="Throw knives, slice bonus apples & coins, defeat bosses, and unlock legendary blades in Knife Dash." />
+  <meta property="og:type" content="website" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <script src="https://youtube.com" nonce="ytgame"></script>
+  <style>
+    :root {
+      --bg-top: #121218;
+      --bg-mid: #17152b;
+      --bg-bot: #1e1b38;
+      --surface: #1d1b30;
+      --surface-elevated: #25223d;
+      --border-subtle: rgba(255, 255, 255, 0.1);
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --accent-gold: #f59e0b;
+      --accent-gold-bright: #fbbf24;
+      --accent-crimson: #ef4444;
+      --accent-emerald: #10b981;
+      --accent-cyan: #22d3ee;
+      --font-sans: 'Trebuchet MS', 'Segoe UI', system-ui, -apple-system, sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+    }
+
+    html, body {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: #0c0c12;
+      color: var(--text-main);
+      font-family: var(--font-sans);
+      touch-action: manipulation;
+    }
+
+    body {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .tabular {
+      font-variant-numeric: tabular-nums;
+    }
+
+    /* Arcade Shell Container */
+    #game-shell {
+      position: relative;
+      width: 100%;
+      max-width: 480px;
+      height: 100vh;
+      height: 100dvh;
+      max-height: 920px;
+      background: linear-gradient(180deg, var(--bg-top) 0%, var(--bg-mid) 52%, var(--bg-bot) 100%);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      border-left: 1px solid var(--border-subtle);
+      border-right: 1px solid var(--border-subtle);
+      box-shadow: 0 24px 80px rgba(0, 0, 0, 0.75);
+    }
+
+    /* Top Persistent Header */
+    #top-header {
+      position: relative;
+      z-index: 30;
+      height: 58px;
+      min-height: 58px;
+      padding: 0 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      background: rgba(16, 15, 26, 0.92);
+      border-bottom: 1px solid var(--border-subtle);
+    }
+
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-width: 0;
+    }
+
+    .level-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 5px 10px;
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      white-space: nowrap;
+      color: var(--text-main);
+    }
+
+    .level-badge.boss {
+      background: rgba(239, 68, 68, 0.2);
+      border-color: rgba(248, 113, 113, 0.55);
+      color: #fca5a5;
+    }
+
+    .score-readout {
+      display: flex;
+      flex-direction: column;
+      line-height: 1.1;
+    }
+
+    .score-kicker {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      color: var(--text-muted);
+      text-transform: uppercase;
+    }
+
+    .score-val {
+      font-size: 17px;
+      font-weight: 800;
+      color: var(--text-main);
+    }
+
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+
+    .icon-btn {
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      background: rgba(255, 255, 255, 0.07);
+      color: var(--text-main);
+      font-size: 18px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: transform 0.12s ease, background-color 0.15s ease;
+    }
+
+    .icon-btn:hover {
+      background: rgba(255, 255, 255, 0.14);
+    }
+
+    .icon-btn:active {
+      transform: scale(0.94);
+    }
+
+    .icon-btn:focus-visible,
+    .btn:focus-visible {
+      outline: 2px solid var(--accent-gold-bright);
+      outline-offset: 2px;
+    }
+
+    .icon-btn[hidden] {
+      display: none;
+    }
+
+    .coin-counter {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      height: 40px;
+      padding: 0 11px;
+      border-radius: 10px;
+      background: rgba(245, 158, 11, 0.14);
+      border: 1px solid rgba(251, 191, 36, 0.35);
+      color: var(--accent-gold-bright);
+      font-size: 15px;
+      font-weight: 800;
+      white-space: nowrap;
+    }
+
+    /* Stage Canvas Wrapper */
+    #stage-wrap {
+      position: relative;
+      flex: 1;
+      width: 100%;
+      min-height: 0;
+      overflow: hidden;
+    }
+
+    #game-canvas {
+      display: block;
+      width: 100%;
+      height: 100%;
+      cursor: pointer;
+    }
+
+    /* Boss Stage Banner */
+    #boss-banner {
+      position: absolute;
+      top: 18px;
+      left: 50%;
+      transform: translateX(-50%) scale(0.9);
+      z-index: 15;
+      pointer-events: none;
+      padding: 8px 18px;
+      border-radius: 10px;
+      background: rgba(185, 28, 28, 0.92);
+      border: 2px solid #fbbf24;
+      color: #fffbeb;
+      font-size: 15px;
+      font-weight: 900;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      white-space: nowrap;
+      box-shadow: 0 10px 28px rgba(0, 0, 0, 0.55);
+      opacity: 0;
+      transition: opacity 0.2s ease, transform 0.2s ease;
+    }
+
+    #boss-banner.visible {
+      opacity: 1;
+      transform: translateX(-50%) scale(1);
+    }
+
+    /* Overlays */
+    .overlay {
+      position: absolute;
+      inset: 0;
+      z-index: 25;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+      transition: opacity 0.18s ease, visibility 0.18s ease;
+    }
+
+    .overlay.active {
+      opacity: 1;
+      visibility: visible;
+      pointer-events: auto;
+    }
+
+    /* Main Menu Overlay sits cleanly around the rotating canvas centerpiece */
+    #menu-overlay {
+      justify-content: space-between;
+      padding: 18px 22px 22px;
+      background: transparent;
+      pointer-events: none;
+    }
+
+    #menu-overlay.active .menu-interactive {
+      pointer-events: auto;
+    }
+
+    .menu-top {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      width: 100%;
+      text-align: center;
+    }
+
+    .studio-tag {
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--accent-gold);
+      margin-bottom: 4px;
+    }
+
+    .title-svg {
+      width: min(300px, 84%);
+      height: auto;
+      display: block;
+      filter: drop-shadow(0 8px 20px rgba(0, 0, 0, 0.55));
+    }
+
+    .menu-bottom {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+      background: rgba(18, 17, 30, 0.9);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 16px;
+      padding: 16px;
+      box-shadow: 0 16px 40px rgba(0, 0, 0, 0.55);
+    }
+
+    .menu-stats {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      font-size: 14px;
+      font-weight: 700;
+      color: #cbd5e1;
+      flex-wrap: wrap;
+    }
+
+    .menu-stats strong {
+      color: #ffffff;
+    }
+
+    .sep-dot {
+      color: #64748b;
+    }
+
+    /* Modal Backdrop (solid alpha tint, no backdrop-filter over canvas) */
+    .modal-backdrop {
+      background: rgba(10, 10, 18, 0.84);
+    }
+
+    .modal-card {
+      width: 100%;
+      max-width: 360px;
+      background: var(--surface);
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      border-radius: 18px;
+      padding: 22px 20px;
+      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.72);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      gap: 14px;
+    }
+
+    .modal-title {
+      font-size: 26px;
+      font-weight: 900;
+      letter-spacing: 0.03em;
+      color: #ffffff;
+    }
+
+    .modal-subtitle {
+      font-size: 14px;
+      color: var(--text-muted);
+      line-height: 1.4;
+    }
+
+    .stat-row {
+      width: 100%;
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+    }
+
+    .stat-row.three {
+      grid-template-columns: repeat(3, 1fr);
+    }
+
+    .stat-box {
+      background: var(--surface-elevated);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 12px;
+      padding: 10px 8px;
+    }
+
+    .stat-box-label {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--text-muted);
+      margin-bottom: 4px;
+    }
+
+    .stat-box-value {
+      font-size: 20px;
+      font-weight: 900;
+      color: #ffffff;
+    }
+
+    .stat-box-value.gold {
+      color: var(--accent-gold-bright);
+    }
+
+    /* Buttons */
+    .btn {
+      width: 100%;
+      min-height: 48px;
+      padding: 12px 18px;
+      border-radius: 12px;
+      border: 1px solid transparent;
+      font-family: var(--font-sans);
+      font-size: 16px;
+      font-weight: 800;
+      letter-spacing: 0.04em;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      white-space: nowrap;
+      transition: transform 0.12s ease, filter 0.15s ease, background-color 0.15s ease;
+    }
+
+    .btn:active:not(:disabled) {
+      transform: scale(0.97);
+    }
+
+    .btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .btn-primary {
+      background: #ef4444;
+      color: #ffffff;
+      border-color: #f87171;
+      box-shadow: 0 6px 0 #991b1b, 0 12px 24px rgba(239, 68, 68, 0.3);
+    }
+
+    .btn-primary:hover:not(:disabled) {
+      filter: brightness(1.08);
+    }
+
+    .btn-secondary {
+      background: var(--surface-elevated);
+      color: #f8fafc;
+      border-color: rgba(255, 255, 255, 0.16);
+    }
+
+    .btn-secondary:hover:not(:disabled) {
+      background: #2f2b4d;
+    }
+
+    .btn-gold {
+      background: #d97706;
+      color: #ffffff;
+      border-color: #fbbf24;
+      box-shadow: 0 4px 0 #92400e;
+    }
+
+    .btn-gold:hover:not(:disabled) {
+      filter: brightness(1.08);
+    }
+
+    .btn-revive {
+      background: #059669;
+      color: #ffffff;
+      border-color: #34d399;
+      font-size: clamp(13px, 3.6vw, 15px);
+      padding: 12px 12px;
+      box-shadow: 0 5px 0 #065f46, 0 0 18px rgba(16, 185, 129, 0.4);
+      animation: pulseRevive 1.4s ease-in-out infinite;
+    }
+
+    @keyframes pulseRevive {
+      0%, 100% { box-shadow: 0 5px 0 #065f46, 0 0 14px rgba(16, 185, 129, 0.35); }
+      50% { box-shadow: 0 5px 0 #065f46, 0 0 28px rgba(52, 211, 153, 0.78); }
+    }
+
+    .menu-secondary-row {
+      width: 100%;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .control-hint {
+      font-size: 12px;
+      color: var(--text-muted);
+      letter-spacing: 0.02em;
+      text-align: center;
+    }
+
+    /* Shop & Levels Overlay */
+    #shop-overlay,
+    #levels-overlay {
+      justify-content: flex-start;
+      padding: 14px;
+      background: rgba(14, 13, 24, 0.97);
+    }
+
+    .shop-container {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      min-height: 0;
+    }
+
+    .shop-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      flex-shrink: 0;
+    }
+
+    .shop-title {
+      font-size: 20px;
+      font-weight: 900;
+      letter-spacing: 0.03em;
+    }
+
+    .btn-compact {
+      width: auto;
+      min-height: 40px;
+      padding: 8px 14px;
+      font-size: 14px;
+    }
+
+    .shop-ad-banner {
+      flex-shrink: 0;
+      min-height: 48px;
+      font-size: 15px;
+    }
+
+    .shop-tabs {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 6px;
+      padding: 4px;
+      background: rgba(255, 255, 255, 0.06);
+      border-radius: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      flex-shrink: 0;
+    }
+
+    .shop-tab {
+      min-height: 38px;
+      border: none;
+      border-radius: 9px;
+      background: transparent;
+      color: var(--text-muted);
+      font-family: var(--font-sans);
+      font-size: 13px;
+      font-weight: 800;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: background-color 0.15s ease, color 0.15s ease;
+    }
+
+    .shop-tab.active {
+      background: var(--surface-elevated);
+      color: #ffffff;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
+    }
+
+    .shop-tab:focus-visible {
+      outline: 2px solid var(--accent-gold-bright);
+      outline-offset: 2px;
+    }
+
+    .weapon-grid {
+      flex: 1;
+      overflow-y: auto;
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+      padding-bottom: 10px;
+      align-content: start;
+    }
+
+    .weapon-card {
+      background: var(--surface);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 14px;
+      padding: 10px 8px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      text-align: center;
+    }
+
+    .weapon-card.equipped {
+      border-color: var(--accent-gold-bright);
+      background: #262242;
+    }
+
+    .weapon-preview {
+      width: 68px;
+      height: 68px;
+      border-radius: 10px;
+      background: rgba(0, 0, 0, 0.25);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+
+    .bg-swatch {
+      width: 60px;
+      height: 60px;
+      border-radius: 8px;
+      border: 1px solid rgba(255, 255, 255, 0.18);
+    }
+
+    .weapon-name {
+      font-size: 13px;
+      font-weight: 800;
+      color: #f8fafc;
+      line-height: 1.2;
+      min-height: 28px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .weapon-action {
+      width: 100%;
+      min-height: 38px;
+      padding: 7px 8px;
+      font-size: 13px;
+      border-radius: 9px;
+    }
+
+    .weapon-action.is-equipped {
+      background: rgba(16, 185, 129, 0.2);
+      border-color: rgba(52, 211, 153, 0.5);
+      color: #6ee7b7;
+      cursor: default;
+    }
+
+    .weapon-action.is-locked {
+      background: rgba(255, 255, 255, 0.07);
+      border-color: rgba(255, 255, 255, 0.14);
+      color: var(--accent-gold-bright);
+    }
+
+    /* Level Select Grid */
+    .levels-summary {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      padding: 8px 10px;
+      background: var(--surface);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 10px;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text-muted);
+      flex-shrink: 0;
+    }
+
+    .levels-summary strong {
+      color: #ffffff;
+    }
+
+    .levels-grid {
+      flex: 1;
+      overflow-y: auto;
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 9px;
+      padding-bottom: 12px;
+      align-content: start;
+    }
+
+    .level-tile {
+      min-height: 66px;
+      padding: 8px 4px;
+      border-radius: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      background: var(--surface);
+      color: #ffffff;
+      font-family: var(--font-sans);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 3px;
+      cursor: pointer;
+      transition: transform 0.12s ease, background-color 0.15s ease;
+    }
+
+    .level-tile:active:not(:disabled) {
+      transform: scale(0.95);
+    }
+
+    .level-tile:focus-visible {
+      outline: 2px solid var(--accent-gold-bright);
+      outline-offset: 2px;
+    }
+
+    .level-tile.passed {
+      background: rgba(16, 185, 129, 0.14);
+      border-color: rgba(52, 211, 153, 0.42);
+    }
+
+    .level-tile.current {
+      background: rgba(245, 158, 11, 0.2);
+      border-color: var(--accent-gold-bright);
+      box-shadow: 0 0 14px rgba(245, 158, 11, 0.25);
+    }
+
+    .level-tile.locked {
+      background: rgba(255, 255, 255, 0.04);
+      border-color: rgba(255, 255, 255, 0.07);
+      color: #64748b;
+      cursor: not-allowed;
+    }
+
+    .level-tile-num {
+      font-size: 18px;
+      font-weight: 900;
+      line-height: 1;
+    }
+
+    .level-tile-status {
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    .level-tile.passed .level-tile-status {
+      color: #6ee7b7;
+    }
+
+    .level-tile.current .level-tile-status {
+      color: var(--accent-gold-bright);
+    }
+
+    /* Simulated Rewarded Ad Modal */
+    #ad-overlay {
+      z-index: 50;
+      background: rgba(8, 8, 14, 0.94);
+    }
+
+    .ad-progress-track {
+      width: 100%;
+      height: 12px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.12);
+      overflow: hidden;
+    }
+
+    .ad-progress-fill {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, #10b981, #fbbf24);
+      transition: width 0.2s linear;
+    }
+
+    .ad-timer-text {
+      font-size: 36px;
+      font-weight: 900;
+      color: var(--accent-gold-bright);
+    }
+
+    @media (max-height: 660px) {
+      .menu-bottom {
+        padding: 12px;
+        gap: 9px;
+      }
+      .btn {
+        min-height: 44px;
+        padding: 10px 14px;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .btn-revive {
+        animation: none;
+      }
+    }
+  </style>
+</head>
+<body data-state="title">
+  <div id="game-shell">
+    <!-- Top Persistent Header -->
+    <header id="top-header">
+      <div class="header-left">
+        <div id="hud-level" class="level-badge tabular">LVL 1</div>
+        <div class="score-readout">
+          <span class="score-kicker">Score</span>
+          <span id="hud-score" class="score-val tabular">0</span>
+        </div>
+      </div>
+      <div class="header-right">
+        <button id="btn-pause" class="icon-btn" type="button" aria-label="Pause game" hidden>⏸</button>
+        <button id="btn-sound" class="icon-btn" type="button" aria-label="Toggle sound">🔊</button>
+        <div id="hud-coins" class="coin-counter tabular" aria-label="Coins">🪙 <span id="hud-coins-val">100</span></div>
+      </div>
+    </header>
+
+    <!-- Main Playfield -->
+    <main id="stage-wrap">
+      <canvas id="game-canvas" data-testid="game-canvas"></canvas>
+
+      <div id="boss-banner" role="status" aria-live="polite" hidden>BOSS STAGE!</div>
+
+      <!-- Main Menu Overlay -->
+      <section id="menu-overlay" class="overlay active" aria-label="Main Menu">
+        <div class="menu-top">
+          <div class="studio-tag">Haitou Games</div>
+          <svg class="title-svg" viewBox="0 0 360 88" role="img" aria-label="Knife Dash">
+            <defs>
+              <linearGradient id="kdBlade" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0%" stop-color="#f8fafc" />
+                <stop offset="55%" stop-color="#cbd5e1" />
+                <stop offset="100%" stop-color="#64748b" />
+              </linearGradient>
+              <linearGradient id="kdGold" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="#fde68a" />
+                <stop offset="50%" stop-color="#f59e0b" />
+                <stop offset="100%" stop-color="#b45309" />
+              </linearGradient>
+            </defs>
+            <!-- Decorative Blade Underline -->
+            <path d="M40 72 L308 72 L334 66 L308 60 L40 60 Z" fill="url(#kdBlade)" opacity="0.92" />
+            <rect x="20" y="57" width="24" height="18" rx="4" fill="#ef4444" stroke="#7f1d1d" stroke-width="2" />
+            <rect x="42" y="54" width="6" height="24" rx="2" fill="url(#kdGold)" />
+            <!-- Title Typography -->
+            <text x="180" y="46" text-anchor="middle" font-family="'Trebuchet MS', system-ui, sans-serif" font-weight="900" font-size="44" letter-spacing="3" fill="#ffffff" stroke="#0f172a" stroke-width="6" paint-order="stroke fill">KNIFE DASH</text>
+            <text x="180" y="46" text-anchor="middle" font-family="'Trebuchet MS', system-ui, sans-serif" font-weight="900" font-size="44" letter-spacing="3" fill="url(#kdGold)">KNIFE DASH</text>
+          </svg>
+        </div>
+
+        <div class="menu-bottom menu-interactive">
+          <div class="menu-stats tabular">
+            <span>Current Level: <strong id="menu-current-level">1</strong></span>
+            <span class="sep-dot" aria-hidden="true">·</span>
+            <span>Best Score: <strong id="menu-best-score">0</strong></span>
+            <span class="sep-dot" aria-hidden="true">·</span>
+            <span id="menu-equipped-weapon">Classic Dagger</span>
+          </div>
+          <button id="btn-play" class="btn btn-primary" type="button" data-start="true">PLAY</button>
+          <div class="menu-secondary-row">
+            <button id="btn-open-levels" class="btn btn-secondary" type="button">LEVELS 🗺️</button>
+            <button id="btn-open-shop" class="btn btn-secondary" type="button">SHOP 🛒</button>
+          </div>
+          <div class="control-hint">Tap / Click or Space / ArrowUp to Throw · Esc Pause</div>
+        </div>
+      </section>
+
+      <!-- Level Select Overlay -->
+      <section id="levels-overlay" class="overlay modal-backdrop" aria-label="Level Select" aria-hidden="true">
+        <div class="shop-container">
+          <div class="shop-header">
+            <h2 class="shop-title">LEVELS</h2>
+            <button id="btn-close-levels" class="btn btn-secondary btn-compact" type="button">BACK</button>
+          </div>
+          <div id="levels-summary" class="levels-summary tabular"></div>
+          <div id="levels-grid" class="levels-grid"></div>
+        </div>
+      </section>
+
+      <!-- Weapon, Wood & Background Shop Overlay -->
+      <section id="shop-overlay" class="overlay modal-backdrop" aria-label="Shop" aria-hidden="true">
+        <div class="shop-container">
+          <div class="shop-header">
+            <h2 class="shop-title">SHOP</h2>
+            <button id="btn-close-shop" class="btn btn-secondary btn-compact" type="button">BACK</button>
+          </div>
+          <button id="btn-shop-ad" class="btn btn-gold shop-ad-banner" type="button">📺 Watch Video (+50 Coins)</button>
+          <div class="shop-tabs" role="tablist" aria-label="Shop Categories">
+            <button id="tab-weapons" class="shop-tab active" type="button" role="tab" aria-selected="true" data-shop-tab="weapons">Knives (12)</button>
+            <button id="tab-woods" class="shop-tab" type="button" role="tab" aria-selected="false" data-shop-tab="woods">Woods (6)</button>
+            <button id="tab-backgrounds" class="shop-tab" type="button" role="tab" aria-selected="false" data-shop-tab="backgrounds">Themes (6)</button>
+          </div>
+          <div id="weapon-grid" class="weapon-grid"></div>
+        </div>
+      </section>
+
+      <!-- Pause Overlay -->
+      <section id="pause-overlay" class="overlay modal-backdrop" aria-label="Pause Menu" aria-hidden="true">
+        <div class="modal-card">
+          <h2 class="modal-title">PAUSED</h2>
+          <p class="modal-subtitle">Take a breather — your knives are holding steady.</p>
+          <button id="btn-resume" class="btn btn-primary" type="button">RESUME</button>
+          <button id="btn-pause-menu" class="btn btn-secondary" type="button">MAIN MENU</button>
+        </div>
+      </section>
+
+      <!-- Level Complete Overlay -->
+      <section id="level-complete-overlay" class="overlay modal-backdrop" aria-label="Level Complete" aria-hidden="true">
+        <div class="modal-card">
+          <h2 id="lc-title" class="modal-title">LEVEL 1 CLEARED!</h2>
+          <p id="lc-subtitle" class="modal-subtitle">Target shattered cleanly!</p>
+          <div class="stat-row">
+            <div class="stat-box">
+              <div class="stat-box-label">Run Score</div>
+              <div id="lc-score" class="stat-box-value tabular">0</div>
+            </div>
+            <div class="stat-box">
+              <div class="stat-box-label">Coins Earned</div>
+              <div id="lc-coins" class="stat-box-value gold tabular">+10 🪙</div>
+            </div>
+          </div>
+          <button id="btn-double-coins" class="btn btn-gold" type="button">🎬 Claim 2X Coins</button>
+          <button id="btn-next-level" class="btn btn-primary" type="button" data-start="true">NEXT LEVEL</button>
+          <button id="btn-lc-menu" class="btn btn-secondary" type="button">MAIN MENU</button>
+        </div>
+      </section>
+
+      <!-- Game Over Overlay -->
+      <section id="gameover-overlay" class="overlay modal-backdrop" aria-label="Game Over" aria-hidden="true">
+        <div class="modal-card">
+          <h2 class="modal-title">GAME OVER</h2>
+          <p class="modal-subtitle">Steel clashed against steel!</p>
+          <div class="stat-row three">
+            <div class="stat-box">
+              <div class="stat-box-label">Level</div>
+              <div id="go-level" class="stat-box-value tabular">1</div>
+            </div>
+            <div class="stat-box">
+              <div class="stat-box-label">Score</div>
+              <div id="go-score" class="stat-box-value tabular">0</div>
+            </div>
+            <div class="stat-box">
+              <div class="stat-box-label">Best</div>
+              <div id="go-best" class="stat-box-value gold tabular">0</div>
+            </div>
+          </div>
+          <button id="btn-second-chance" class="btn btn-revive" type="button">🎬 Second Chance (Continue Level)</button>
+          <button id="btn-retry" class="btn btn-primary" type="button" data-start="true">PLAY AGAIN</button>
+          <button id="btn-go-menu" class="btn btn-secondary" type="button">MAIN MENU</button>
+        </div>
+      </section>
+
+      <!-- Local Rewarded Ad Simulator Modal -->
+      <section id="ad-overlay" class="overlay" aria-label="Rewarded Ad Simulation" aria-hidden="true">
+        <div class="modal-card">
+          <div class="studio-tag">Haitou Games · Rewarded Video</div>
+          <h2 class="modal-title">SPONSORED PREVIEW</h2>
+          <p id="ad-desc" class="modal-subtitle">Watch until the timer finishes to claim your reward.</p>
+          <div id="ad-timer" class="ad-timer-text tabular">10s</div>
+          <div class="ad-progress-track">
+            <div id="ad-progress" class="ad-progress-fill"></div>
+          </div>
+          <p class="control-hint">Local test simulator (uses YouTube Playables Ads SDK in production)</p>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    (function () {
+      'use strict';
+
+      /* =====================================================================
+         1. PURE GAME LOGIC & CONSTANTS (Testable & Deterministic)
+         ===================================================================== */
+      const STORAGE_KEY = 'knife_dash_save_v1';
+      const LOGICAL_W = 450;
+      const LOGICAL_H = 740;
+      const TARGET_X = LOGICAL_W / 2;
+      const TARGET_Y = 236;
+      const TARGET_RADIUS = 84;
+      const KNIFE_START_Y = 636;
+      const KNIFE_SPEED = 2450;
+      const KNIFE_COLLISION_ANGLE = 0.21; // ~12 degrees angular clearance
+      const ITEM_HIT_ANGLE = 0.27;        // ~15.5 degrees slice radius
+
+      const WEAPONS = [
+        { id: 'classic',   name: 'Classic Dagger',     emoji: '🗡️', price: 0,   primary: '#e2e8f0', accent: '#ef4444' },
+        { id: 'cutlass',   name: 'Pirate Cutlass',     emoji: '🏴‍☠️', price: 40,  primary: '#f1f5f9', accent: '#d97706' },
+        { id: 'carrot',    name: 'Carrot Blade',       emoji: '🥕', price: 70,  primary: '#fb923c', accent: '#22c55e' },
+        { id: 'katana',    name: 'Samurai Katana',     emoji: '⚔️', price: 100, primary: '#f8fafc', accent: '#b91c1c' },
+        { id: 'kunai',     name: 'Shadow Kunai',       emoji: '🥷', price: 120, primary: '#475569', accent: '#ef4444' },
+        { id: 'trident',   name: 'Golden Trident',     emoji: '🔱', price: 150, primary: '#fde047', accent: '#b45309' },
+        { id: 'lightning', name: 'Lightning Bolt',     emoji: '⚡', price: 200, primary: '#fef08a', accent: '#38bdf8' },
+        { id: 'crystal',   name: 'Ice Crystal Shard',  emoji: '❄️', price: 250, primary: '#bae6fd', accent: '#0284c7' },
+        { id: 'laser',     name: 'Cyber Laser Sword',  emoji: '🔦', price: 300, primary: '#22d3ee', accent: '#0f172a' },
+        { id: 'emerald',   name: 'Venom Emerald Dirk', emoji: '🧪', price: 350, primary: '#34d399', accent: '#065f46' },
+        { id: 'flame',     name: 'Dragon Flame Blade', emoji: '🔥', price: 400, primary: '#fb7185', accent: '#f59e0b' },
+        { id: 'galaxy',    name: 'Cosmic Starblade',   emoji: '🌌', price: 500, primary: '#c084fc', accent: '#facc15' }
+      ];
+
+      const WOOD_TYPES = [
+        { id: 'oak',        name: 'Classic Oak',    emoji: '🪵', price: 0,   bark: '#5c3416', face: '#c88d55', ring: '#9c6230', crack: '#7c481e' },
+        { id: 'birch',      name: 'Silver Birch',   emoji: '🤍', price: 60,  bark: '#475569', face: '#efeae0', ring: '#cbd5e1', crack: '#64748b' },
+        { id: 'cherry',     name: 'Cherry Blossom', emoji: '🌸', price: 120, bark: '#581c3a', face: '#eaa09c', ring: '#be6a74', crack: '#881337' },
+        { id: 'ebony',      name: 'Obsidian Ebony', emoji: '🖤', price: 180, bark: '#0f172a', face: '#334155', ring: '#64748b', crack: '#1e293b' },
+        { id: 'bamboo',     name: 'Jade Bamboo',    emoji: '🎋', price: 240, bark: '#365314', face: '#a3e635', ring: '#65a30d', crack: '#3f6212' },
+        { id: 'golden_oak', name: 'Gilded Timber',  emoji: '✨', price: 350, bark: '#78350f', face: '#fbbf24', ring: '#d97706', crack: '#92400e' }
+      ];
+
+      const BACKGROUNDS = [
+        { id: 'midnight',       name: 'Midnight Arcade', emoji: '🌌', price: 0,   top: '#121218', mid: '#17152b', bot: '#1e1b38', glow: 'rgba(99, 102, 241, 0.18)' },
+        { id: 'crimson_dojo',   name: 'Crimson Dojo',    emoji: '🏮', price: 80,  top: '#180c10', mid: '#2c111a', bot: '#3b1522', glow: 'rgba(239, 68, 68, 0.18)' },
+        { id: 'emerald_forest', name: 'Emerald Glade',   emoji: '🌲', price: 140, top: '#091613', mid: '#0e2821', bot: '#14382d', glow: 'rgba(16, 185, 129, 0.18)' },
+        { id: 'ocean_abyss',    name: 'Deep Abyss',      emoji: '🌊', price: 200, top: '#071320', mid: '#0c233a', bot: '#103152', glow: 'rgba(34, 211, 238, 0.18)' },
+        { id: 'royal_velvet',   name: 'Royal Velvet',    emoji: '👑', price: 280, top: '#150e24', mid: '#261742', bot: '#331e59', glow: 'rgba(192, 132, 252, 0.2)' },
+        { id: 'solar_forge',    name: 'Solar Forge',     emoji: '🔥', price: 380, top: '#1a1008', mid: '#301b0c', bot: '#44240e', glow: 'rgba(245, 158, 11, 0.2)' }
+      ];
+
+      const BOSS_THEMES = [
+        { name: 'Golden Crown', emoji: '👑', rim: '#f59e0b', core: '#fef08a', dark: '#78350f', accent: '#ef4444' },
+        { name: 'Lava Core',    emoji: '🔥', rim: '#dc2626', core: '#fb923c', dark: '#271212', accent: '#fde047' },
+        { name: 'Cyber Shield', emoji: '🛡️', rim: '#06b6d4', core: '#22d3ee', dark: '#0f172a', accent: '#a5f3fc' },
+        { name: 'Dragon Eye',   emoji: '🐲', rim: '#9333ea', core: '#facc15', dark: '#1e1035', accent: '#ec4899' }
+      ];
+
+      function normalizeAngle(rad) {
+        const twoPi = Math.PI * 2;
+        let a = rad % twoPi;
+        if (a < 0) a += twoPi;
+        return a;
+      }
+
+      function angularDistance(a, b) {
+        const twoPi = Math.PI * 2;
+        const diff = Math.abs(normalizeAngle(a) - normalizeAngle(b));
+        return Math.min(diff, twoPi - diff);
+      }
+
+      function checkKnifeCollision(localAngle, stuckAngles, threshold) {
+        const thresh = typeof threshold === 'number' ? threshold : KNIFE_COLLISION_ANGLE;
+        for (let i = 0; i < stuckAngles.length; i++) {
+          if (angularDistance(localAngle, stuckAngles[i]) < thresh) {
+            return true;
+          }
+        }
+        return false;
+      }
+
+      function checkBonusHit(localAngle, items, threshold) {
+        const thresh = typeof threshold === 'number' ? threshold : ITEM_HIT_ANGLE;
+        const hitIndices = [];
+        for (let i = 0; i < items.length; i++) {
+          if (!items[i].collected && angularDistance(localAngle, items[i].localAngle) < thresh) {
+            hitIndices.push(i);
+          }
+        }
+        return hitIndices;
+      }
+
+      function seededRandom(seed) {
+        let s = (seed * 9301 + 49297) % 233280;
+        return function () {
+          s = (s * 9301 + 49297) % 233280;
+          return s / 233280;
+        };
+      }
+
+      function generateLevel(levelNum) {
+        const lvl = Math.max(1, Math.floor(levelNum));
+        const isBoss = lvl % 5 === 0;
+        const rand = seededRandom(lvl * 137 + 19);
+
+        // Knives required: starts at 6, ramps smoothly up to 14
+        let knivesToThrow;
+        if (lvl === 1) {
+          knivesToThrow = 6;
+        } else if (lvl <= 30) {
+          knivesToThrow = Math.min(14, 6 + Math.floor((lvl - 1) * 0.28) + (isBoss ? 1 : 0));
+        } else {
+          knivesToThrow = Math.min(14, 11 + (lvl % 4));
+        }
+
+        // Pre-stuck obstacle knives: 0 on lvl 1, scaling safely up to 5
+        let obstacleCount = 0;
+        if (lvl === 1) {
+          obstacleCount = 0;
+        } else if (lvl <= 4) {
+          obstacleCount = lvl === 2 ? 1 : 2;
+        } else if (lvl <= 15) {
+          obstacleCount = 2 + Math.floor(rand() * 2); // 2-3
+        } else if (lvl <= 30) {
+          obstacleCount = 3 + Math.floor(rand() * 2); // 3-4
+        } else {
+          obstacleCount = 3 + (lvl % 3); // 3-5
+        }
+
+        const obstacles = [];
+        const minObstacleGap = 0.55; // Plenty of clearance for player throws
+        let attempts = 0;
+        while (obstacles.length < obstacleCount && attempts < 120) {
+          attempts++;
+          const candidate = normalizeAngle(rand() * Math.PI * 2);
+          let safe = true;
+          for (let i = 0; i < obstacles.length; i++) {
+            if (angularDistance(candidate, obstacles[i]) < minObstacleGap) {
+              safe = false;
+              break;
+            }
+          }
+          if (safe) obstacles.push(candidate);
+        }
+
+        // Bonus Apples / Gold Coins (1 to 3) spaced away from obstacles
+        const itemCount = lvl === 1 ? 2 : 1 + Math.floor(rand() * 3);
+        const items = [];
+        attempts = 0;
+        while (items.length < itemCount && attempts < 120) {
+          attempts++;
+          const candidate = normalizeAngle(rand() * Math.PI * 2);
+          let safe = true;
+          for (let i = 0; i < obstacles.length; i++) {
+            if (angularDistance(candidate, obstacles[i]) < 0.42) {
+              safe = false;
+              break;
+            }
+          }
+          for (let i = 0; i < items.length; i++) {
+            if (angularDistance(candidate, items[i].localAngle) < 0.65) {
+              safe = false;
+              break;
+            }
+          }
+          if (safe) {
+            items.push({
+              localAngle: candidate,
+              type: (items.length + lvl) % 2 === 0 ? 'apple' : 'coin',
+              collected: false
+            });
+          }
+        }
+
+        // Rotation Pattern & Speed Scaling
+        const tierSpeed = Math.min(4.2, 1.55 + (lvl - 1) * 0.085);
+        let pattern = 'steady';
+        if (lvl === 1) pattern = 'steady';
+        else if (lvl <= 3) pattern = 'pulse';
+        else if (lvl <= 6) pattern = isBoss ? 'reverse' : 'pulse';
+        else {
+          const pool = ['pulse', 'reverse', 'stutter', 'oscillate'];
+          pattern = pool[(lvl + Math.floor(rand() * 2)) % pool.length];
+        }
+
+        let bossTheme = null;
+        if (isBoss) {
+          const bossIdx = (Math.floor(lvl / 5) - 1) % BOSS_THEMES.length;
+          bossTheme = BOSS_THEMES[bossIdx];
+        }
+
+        return {
+          level: lvl,
+          isBoss: isBoss,
+          bossTheme: bossTheme,
+          knivesToThrow: knivesToThrow,
+          obstacles: obstacles,
+          items: items,
+          baseSpeed: tierSpeed * (lvl % 2 === 0 ? 1 : -1),
+          pattern: pattern,
+          clearReward: isBoss ? 20 : 10
+        };
+      }
+
+      function computeAngularVelocity(pattern, baseSpeed, elapsed) {
+        const dir = baseSpeed >= 0 ? 1 : -1;
+        const mag = Math.abs(baseSpeed);
+        if (pattern === 'steady') {
+          return baseSpeed;
+        }
+        if (pattern === 'pulse') {
+          return dir * mag * (0.65 + 0.55 * Math.sin(elapsed * 2.1));
+        }
+        if (pattern === 'reverse') {
+          const cycle = elapsed % 4.6;
+          if (cycle < 1.8) return dir * mag;
+          if (cycle < 2.3) return 0; // brief pause telegraph before reverse
+          if (cycle < 4.1) return -dir * mag * 1.05;
+          return 0;
+        }
+        if (pattern === 'stutter') {
+          const cycle = elapsed % 2.8;
+          if (cycle < 0.55) return dir * mag * 0.15;
+          if (cycle < 1.9) return dir * mag * 1.35;
+          return dir * mag * 0.65;
+        }
+        // 'oscillate'
+        return dir * mag * (1.25 * Math.sin(elapsed * 1.55) + 0.35 * Math.cos(elapsed * 3.1));
+      }
+
+      function mergePlayerData(raw) {
+        const defaults = {
+          coins: 100,
+          currentLevel: 1,
+          bestScore: 0,
+          unlockedWeapons: ['classic'],
+          equippedWeapon: 'classic',
+          unlockedWoods: ['oak'],
+          equippedWood: 'oak',
+          unlockedBackgrounds: ['midnight'],
+          equippedBackground: 'midnight'
+        };
+        if (!raw || typeof raw !== 'object') return defaults;
+        const unlocked = Array.isArray(raw.unlockedWeapons) && raw.unlockedWeapons.length > 0
+          ? Array.from(new Set(['classic'].concat(raw.unlockedWeapons.filter(function (id) {
+              return WEAPONS.some(function (w) { return w.id === id; });
+            }))))
+          : ['classic'];
+        const equipped = unlocked.indexOf(raw.equippedWeapon) !== -1 ? raw.equippedWeapon : 'classic';
+
+        const unlockedWoods = Array.isArray(raw.unlockedWoods) && raw.unlockedWoods.length > 0
+          ? Array.from(new Set(['oak'].concat(raw.unlockedWoods.filter(function (id) {
+              return WOOD_TYPES.some(function (w) { return w.id === id; });
+            }))))
+          : ['oak'];
+        const equippedWood = unlockedWoods.indexOf(raw.equippedWood) !== -1 ? raw.equippedWood : 'oak';
+
+        const unlockedBgs = Array.isArray(raw.unlockedBackgrounds) && raw.unlockedBackgrounds.length > 0
+          ? Array.from(new Set(['midnight'].concat(raw.unlockedBackgrounds.filter(function (id) {
+              return BACKGROUNDS.some(function (b) { return b.id === id; });
+            }))))
+          : ['midnight'];
+        const equippedBg = unlockedBgs.indexOf(raw.equippedBackground) !== -1 ? raw.equippedBackground : 'midnight';
+
+        return {
+          coins: typeof raw.coins === 'number' && isFinite(raw.coins) ? Math.max(0, Math.floor(raw.coins)) : 100,
+          currentLevel: typeof raw.currentLevel === 'number' && isFinite(raw.currentLevel) ? Math.max(1, Math.floor(raw.currentLevel)) : 1,
+          bestScore: typeof raw.bestScore === 'number' && isFinite(raw.bestScore) ? Math.max(0, Math.floor(raw.bestScore)) : 0,
+          unlockedWeapons: unlocked,
+          equippedWeapon: equipped,
+          unlockedWoods: unlockedWoods,
+          equippedWood: equippedWood,
+          unlockedBackgrounds: unlockedBgs,
+          equippedBackground: equippedBg
+        };
+      }
+
+      function getWeaponById(id) {
+        for (let i = 0; i < WEAPONS.length; i++) {
+          if (WEAPONS[i].id === id) return WEAPONS[i];
+        }
+        return WEAPONS[0];
+      }
+
+      function getWoodById(id) {
+        for (let i = 0; i < WOOD_TYPES.length; i++) {
+          if (WOOD_TYPES[i].id === id) return WOOD_TYPES[i];
+        }
+        return WOOD_TYPES[0];
+      }
+
+      function getBackgroundById(id) {
+        for (let i = 0; i < BACKGROUNDS.length; i++) {
+          if (BACKGROUNDS[i].id === id) return BACKGROUNDS[i];
+        }
+        return BACKGROUNDS[0];
+      }
+
+      function getLevelTrackSummary(highestReachedLevel, minDisplayCount) {
+        const current = Math.max(1, Math.floor(highestReachedLevel || 1));
+        const minCount = Math.max(30, minDisplayCount || 30);
+        const totalDisplay = Math.max(minCount, Math.ceil((current + 4) / 4) * 4);
+        const levels = [];
+        let passedCount = 0;
+        let remainingCount = 0;
+        for (let lvl = 1; lvl <= totalDisplay; lvl++) {
+          const isBoss = lvl % 5 === 0;
+          let status = 'locked';
+          if (lvl < current) {
+            status = 'passed';
+            passedCount++;
+          } else if (lvl === current) {
+            status = 'current';
+            remainingCount++;
+          } else {
+            remainingCount++;
+          }
+          levels.push({
+            level: lvl,
+            status: status,
+            isBoss: isBoss,
+            bossTheme: isBoss ? BOSS_THEMES[(Math.floor(lvl / 5) - 1) % BOSS_THEMES.length] : null
+          });
+        }
+        return {
+          totalDisplay: totalDisplay,
+          passedCount: passedCount,
+          currentLevel: current,
+          remainingCount: remainingCount,
+          levels: levels
+        };
+      }
+
+      /* Expose pure core for automated unit testing if needed */
+      window.KnifeDashCore = {
+        WEAPONS: WEAPONS,
+        WOOD_TYPES: WOOD_TYPES,
+        BACKGROUNDS: BACKGROUNDS,
+        BOSS_THEMES: BOSS_THEMES,
+        normalizeAngle: normalizeAngle,
+        angularDistance: angularDistance,
+        checkKnifeCollision: checkKnifeCollision,
+        checkBonusHit: checkBonusHit,
+        generateLevel: generateLevel,
+        computeAngularVelocity: computeAngularVelocity,
+        mergePlayerData: mergePlayerData,
+        getLevelTrackSummary: getLevelTrackSummary
+      };
+
+      /* =====================================================================
+         2. WEB AUDIO API SYNTHESIZER (Zero External Files)
+         ===================================================================== */
+      const SoundFX = (function () {
+        let ctx = null;
+        let manualMuted = false;
+        let ytAudioEnabled = true;
+
+        function isAudioActive() {
+          return !manualMuted && ytAudioEnabled;
+        }
+
+        function ensureContext() {
+          if (!isAudioActive()) return null;
+          if (!ctx) {
+            const AudioCtx = window.AudioContext || window.webkitAudioContext;
+            if (!AudioCtx) return null;
+            ctx = new AudioCtx();
+          }
+          if (ctx.state === 'suspended') {
+            ctx.resume().catch(function () {});
+          }
+          return ctx;
+        }
+
+        function setManualMuted(muted) {
+          manualMuted = !!muted;
+          if (!isAudioActive() && ctx && ctx.state === 'running') {
+            ctx.suspend().catch(function () {});
+          }
+        }
+
+        function setYtAudioEnabled(enabled) {
+          ytAudioEnabled = !!enabled;
+          if (!isAudioActive() && ctx && ctx.state === 'running') {
+            ctx.suspend().catch(function () {});
+          } else if (isAudioActive() && ctx && ctx.state === 'suspended') {
+            ctx.resume().catch(function () {});
+          }
+        }
+
+        function playClick() {
+          const ac = ensureContext();
+          if (!ac) return;
+          const now = ac.currentTime;
+          const osc = ac.createOscillator();
+          const gain = ac.createGain();
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(540, now);
+          osc.frequency.exponentialRampToValueAtTime(820, now + 0.045);
+          gain.gain.setValueAtTime(0.12, now);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.05);
+          osc.connect(gain);
+          gain.connect(ac.destination);
+          osc.start(now);
+          osc.stop(now + 0.055);
+        }
+
+        function playThrow() {
+          const ac = ensureContext();
+          if (!ac) return;
+          const now = ac.currentTime;
+          const pitchJitter = 0.94 + Math.random() * 0.12;
+          const osc = ac.createOscillator();
+          const gain = ac.createGain();
+          osc.type = 'triangle';
+          osc.frequency.setValueAtTime(420 * pitchJitter, now);
+          osc.frequency.exponentialRampToValueAtTime(160 * pitchJitter, now + 0.08);
+          gain.gain.setValueAtTime(0.14, now);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.085);
+          osc.connect(gain);
+          gain.connect(ac.destination);
+          osc.start(now);
+          osc.stop(now + 0.09);
+        }
+
+        function playWoodThud() {
+          const ac = ensureContext();
+          if (!ac) return;
+          const now = ac.currentTime;
+          const jitter = 0.92 + Math.random() * 0.16;
+
+          const osc = ac.createOscillator();
+          const gain = ac.createGain();
+          osc.type = 'triangle';
+          osc.frequency.setValueAtTime(165 * jitter, now);
+          osc.frequency.exponentialRampToValueAtTime(52 * jitter, now + 0.09);
+          gain.gain.setValueAtTime(0.32, now);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.1);
+          osc.connect(gain);
+          gain.connect(ac.destination);
+          osc.start(now);
+          osc.stop(now + 0.11);
+
+          // Crisp wood snap transient
+          const bufLen = Math.floor(ac.sampleRate * 0.035);
+          const buf = ac.createBuffer(1, bufLen, ac.sampleRate);
+          const data = buf.getChannelData(0);
+          for (let i = 0; i < bufLen; i++) {
+            data[i] = (Math.random() * 2 - 1) * (1 - i / bufLen);
+          }
+          const noise = ac.createBufferSource();
+          noise.buffer = buf;
+          const filter = ac.createBiquadFilter();
+          filter.type = 'bandpass';
+          filter.frequency.value = 950 * jitter;
+          const nGain = ac.createGain();
+          nGain.gain.setValueAtTime(0.18, now);
+          nGain.gain.exponentialRampToValueAtTime(0.001, now + 0.035);
+          noise.connect(filter);
+          filter.connect(nGain);
+          nGain.connect(ac.destination);
+          noise.start(now);
+        }
+
+        function playMetalClang() {
+          const ac = ensureContext();
+          if (!ac) return;
+          const now = ac.currentTime;
+          const freqs = [880, 1340, 2190];
+          for (let i = 0; i < freqs.length; i++) {
+            const osc = ac.createOscillator();
+            const gain = ac.createGain();
+            osc.type = i === 0 ? 'square' : 'sine';
+            osc.frequency.setValueAtTime(freqs[i], now);
+            osc.frequency.exponentialRampToValueAtTime(freqs[i] * 0.78, now + 0.28);
+            gain.gain.setValueAtTime(0.14 / (i + 1), now);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + 0.29);
+            osc.connect(gain);
+            gain.connect(ac.destination);
+            osc.start(now);
+            osc.stop(now + 0.3);
+          }
+        }
+
+        function playSlice() {
+          const ac = ensureContext();
+          if (!ac) return;
+          const now = ac.currentTime;
+          const osc = ac.createOscillator();
+          const gain = ac.createGain();
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(720, now);
+          osc.frequency.exponentialRampToValueAtTime(1480, now + 0.09);
+          gain.gain.setValueAtTime(0.2, now);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.14);
+          osc.connect(gain);
+          gain.connect(ac.destination);
+          osc.start(now);
+          osc.stop(now + 0.15);
+
+          const osc2 = ac.createOscillator();
+          const gain2 = ac.createGain();
+          osc2.type = 'triangle';
+          osc2.frequency.setValueAtTime(1120, now + 0.04);
+          osc2.frequency.exponentialRampToValueAtTime(1760, now + 0.14);
+          gain2.gain.setValueAtTime(0.16, now + 0.04);
+          gain2.gain.exponentialRampToValueAtTime(0.001, now + 0.16);
+          osc2.connect(gain2);
+          gain2.connect(ac.destination);
+          osc2.start(now + 0.04);
+          osc2.stop(now + 0.17);
+        }
+
+        function playShatter() {
+          const ac = ensureContext();
+          if (!ac) return;
+          const now = ac.currentTime;
+
+          // Burst noise
+          const bufLen = Math.floor(ac.sampleRate * 0.26);
+          const buf = ac.createBuffer(1, bufLen, ac.sampleRate);
+          const data = buf.getChannelData(0);
+          for (let i = 0; i < bufLen; i++) {
+            data[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / bufLen, 1.5);
+          }
+          const noise = ac.createBufferSource();
+          noise.buffer = buf;
+          const filter = ac.createBiquadFilter();
+          filter.type = 'lowpass';
+          filter.frequency.setValueAtTime(1800, now);
+          filter.frequency.exponentialRampToValueAtTime(220, now + 0.25);
+          const nGain = ac.createGain();
+          nGain.gain.setValueAtTime(0.32, now);
+          nGain.gain.exponentialRampToValueAtTime(0.001, now + 0.26);
+          noise.connect(filter);
+          filter.connect(nGain);
+          nGain.connect(ac.destination);
+          noise.start(now);
+
+          // Victory chord arpeggio
+          const notes = [523.25, 659.25, 783.99, 1046.5];
+          for (let i = 0; i < notes.length; i++) {
+            const t = now + i * 0.055;
+            const osc = ac.createOscillator();
+            const gain = ac.createGain();
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(notes[i], t);
+            gain.gain.setValueAtTime(0.14, t);
+            gain.gain.exponentialRampToValueAtTime(0.001, t + 0.26);
+            osc.connect(gain);
+            gain.connect(ac.destination);
+            osc.start(t);
+            osc.stop(t + 0.27);
+          }
+        }
+
+        function playBossIntro() {
+          const ac = ensureContext();
+          if (!ac) return;
+          const now = ac.currentTime;
+          const osc = ac.createOscillator();
+          const gain = ac.createGain();
+          osc.type = 'sawtooth';
+          osc.frequency.setValueAtTime(110, now);
+          osc.frequency.exponentialRampToValueAtTime(165, now + 0.35);
+          const lp = ac.createBiquadFilter();
+          lp.type = 'lowpass';
+          lp.frequency.value = 520;
+          gain.gain.setValueAtTime(0.16, now);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.42);
+          osc.connect(lp);
+          lp.connect(gain);
+          gain.connect(ac.destination);
+          osc.start(now);
+          osc.stop(now + 0.44);
+        }
+
+        return {
+          isAudioActive: isAudioActive,
+          isManualMuted: function () { return manualMuted; },
+          setManualMuted: setManualMuted,
+          setYtAudioEnabled: setYtAudioEnabled,
+          playClick: playClick,
+          playThrow: playThrow,
+          playWoodThud: playWoodThud,
+          playMetalClang: playMetalClang,
+          playSlice: playSlice,
+          playShatter: playShatter,
+          playBossIntro: playBossIntro
+        };
+      })();
+
+      /* =====================================================================
+         3. YOUTUBE PLAYABLES SDK WRAPPER & PERSISTENCE
+         ===================================================================== */
+      let playerData = mergePlayerData(null);
+      let firstFrameSent = false;
+      let gameReadySent = false;
+
+      function getYtGame() {
+        return typeof window.ytgame !== 'undefined' && window.ytgame ? window.ytgame : null;
+      }
+
+      function notifyFirstFrameReady() {
+        if (firstFrameSent) return;
+        firstFrameSent = true;
+        const yt = getYtGame();
+        if (yt && yt.game && typeof yt.game.firstFrameReady === 'function') {
+          try { yt.game.firstFrameReady(); } catch (e) {}
+        }
+      }
+
+      function notifyGameReady() {
+        if (gameReadySent) return;
+        gameReadySent = true;
+        const yt = getYtGame();
+        if (yt && yt.game && typeof yt.game.gameReady === 'function') {
+          try { yt.game.gameReady(); } catch (e) {}
+        }
+      }
+
+      function savePlayerData() {
+        const json = JSON.stringify(playerData);
+        try {
+          window.localStorage.setItem(STORAGE_KEY, json);
+        } catch (e) {}
+        const yt = getYtGame();
+        if (yt && yt.game && typeof yt.game.saveData === 'function') {
+          try {
+            const p = yt.game.saveData(json);
+            if (p && typeof p.catch === 'function') p.catch(function () {});
+          } catch (e) {}
+        }
+      }
+
+      async function loadPlayerData() {
+        let loaded = null;
+        const yt = getYtGame();
+        if (yt && yt.game && typeof yt.game.loadData === 'function') {
+          try {
+            const cloudStr = await yt.game.loadData();
+            if (cloudStr && typeof cloudStr === 'string' && cloudStr.trim().length > 0) {
+              loaded = JSON.parse(cloudStr);
+            }
+          } catch (e) {}
+        }
+        if (!loaded) {
+          try {
+            const localStr = window.localStorage.getItem(STORAGE_KEY);
+            if (localStr) loaded = JSON.parse(localStr);
+          } catch (e) {}
+        }
+        playerData = mergePlayerData(loaded);
+      }
+
+      function reportScore(scoreVal) {
+        const val = Math.max(0, Math.floor(scoreVal));
+        const yt = getYtGame();
+        if (yt && yt.engagement && typeof yt.engagement.sendScore === 'function') {
+          try {
+            const p = yt.engagement.sendScore({ value: val });
+            if (p && typeof p.catch === 'function') p.catch(function () {});
+          } catch (e) {}
+        }
+      }
+
+      /* =====================================================================
+         4. CANVAS RENDERING (8 Weapons, Boss Targets, Pooled Particles)
+         ===================================================================== */
+      const canvas = document.getElementById('game-canvas');
+      const ctx = canvas.getContext('2d');
+
+      // Pooled Particle Ring Buffer (Zero-GC in frame loop)
+      const MAX_PARTICLES = 120;
+      const particles = [];
+      for (let i = 0; i < MAX_PARTICLES; i++) {
+        particles.push({
+          active: false, x: 0, y: 0, vx: 0, vy: 0,
+          size: 4, color: '#ffffff', life: 0, maxLife: 0.4,
+          rot: 0, vrot: 0, gravity: 500, shape: 'rect'
+        });
+      }
+      let particleCursor = 0;
+
+      function spawnParticle(x, y, vx, vy, size, color, maxLife, gravity, shape) {
+        const p = particles[particleCursor];
+        particleCursor = (particleCursor + 1) % MAX_PARTICLES;
+        p.active = true;
+        p.x = x;
+        p.y = y;
+        p.vx = vx;
+        p.vy = vy;
+        p.size = size;
+        p.color = color;
+        p.life = maxLife;
+        p.maxLife = maxLife;
+        p.rot = Math.random() * Math.PI * 2;
+        p.vrot = (Math.random() - 0.5) * 14;
+        p.gravity = typeof gravity === 'number' ? gravity : 520;
+        p.shape = shape || 'rect';
+      }
+
+      function spawnBurst(x, y, count, colors, speedMin, speedMax, sizeMin, sizeMax, shape) {
+        for (let i = 0; i < count; i++) {
+          const ang = Math.random() * Math.PI * 2;
+          const spd = speedMin + Math.random() * (speedMax - speedMin);
+          const sz = sizeMin + Math.random() * (sizeMax - sizeMin);
+          const col = colors[i % colors.length];
+          spawnParticle(x, y, Math.cos(ang) * spd, Math.sin(ang) * spd - 40, sz, col, 0.35 + Math.random() * 0.35, 580, shape);
+        }
+      }
+
+      // Floating Popups Ring Buffer
+      const MAX_POPUPS = 16;
+      const popups = [];
+      for (let i = 0; i < MAX_POPUPS; i++) {
+        popups.push({ active: false, x: 0, y: 0, vy: -75, text: '', color: '#fbbf24', life: 0, maxLife: 0.85 });
+      }
+      let popupCursor = 0;
+
+      function spawnPopup(x, y, text, color) {
+        const fp = popups[popupCursor];
+        popupCursor = (popupCursor + 1) % MAX_POPUPS;
+        fp.active = true;
+        fp.x = x;
+        fp.y = y;
+        fp.vy = -78;
+        fp.text = text;
+        fp.color = color || '#fbbf24';
+        fp.life = 0.85;
+        fp.maxLife = 0.85;
+      }
+
+      // Sliced halves & Shatter chunks & Deflected knives
+      let slicedHalves = [];
+      let shatterPieces = [];
+      let deflectedKnives = [];
+
+      // Crisp Vector Weapon Renderer (origin at weapon center, pointing UP toward -Y)
+      // Tip is around y = -46, pommel around y = +44
+      function drawWeaponShape(c, weaponId, scale) {
+        c.save();
+        if (scale && scale !== 1) c.scale(scale, scale);
+
+        if (weaponId === 'classic') {
+          // Classic Dagger
+          c.fillStyle = '#cbd5e1';
+          c.beginPath();
+          c.moveTo(0, -48);
+          c.lineTo(8, -14);
+          c.lineTo(6, 12);
+          c.lineTo(-6, 12);
+          c.lineTo(-8, -14);
+          c.closePath();
+          c.fill();
+          c.fillStyle = '#f8fafc';
+          c.beginPath();
+          c.moveTo(0, -48);
+          c.lineTo(0, 12);
+          c.lineTo(-6, 12);
+          c.lineTo(-8, -14);
+          c.closePath();
+          c.fill();
+          c.strokeStyle = '#334155';
+          c.lineWidth = 1.5;
+          c.stroke();
+          // Guard
+          c.fillStyle = '#f59e0b';
+          c.fillRect(-13, 10, 26, 6);
+          // Handle
+          c.fillStyle = '#b91c1c';
+          c.fillRect(-5, 16, 10, 24);
+          c.fillStyle = '#f59e0b';
+          c.beginPath();
+          c.arc(0, 42, 6, 0, Math.PI * 2);
+          c.fill();
+        } else if (weaponId === 'cutlass') {
+          // Pirate Cutlass (curved saber blade + gold basket guard)
+          c.fillStyle = '#e2e8f0';
+          c.beginPath();
+          c.moveTo(-2, -48);
+          c.quadraticCurveTo(15, -24, 9, 12);
+          c.lineTo(-6, 12);
+          c.quadraticCurveTo(-8, -18, -2, -48);
+          c.closePath();
+          c.fill();
+          c.fillStyle = '#ffffff';
+          c.beginPath();
+          c.moveTo(-2, -48);
+          c.quadraticCurveTo(10, -24, 4, 12);
+          c.lineTo(0, 12);
+          c.closePath();
+          c.fill();
+          // Gold guard
+          c.strokeStyle = '#f59e0b';
+          c.lineWidth = 4;
+          c.beginPath();
+          c.arc(2, 24, 11, -Math.PI * 0.45, Math.PI * 0.55);
+          c.stroke();
+          c.fillStyle = '#fbbf24';
+          c.fillRect(-12, 10, 24, 5);
+          c.fillStyle = '#5c3317';
+          c.fillRect(-4.5, 15, 9, 25);
+          c.fillStyle = '#f59e0b';
+          c.beginPath();
+          c.arc(0, 42, 6, 0, Math.PI * 2);
+          c.fill();
+        } else if (weaponId === 'carrot') {
+          // Carrot Blade
+          c.fillStyle = '#fb923c';
+          c.beginPath();
+          c.moveTo(0, -48);
+          c.lineTo(12, 14);
+          c.quadraticCurveTo(0, 20, -12, 14);
+          c.closePath();
+          c.fill();
+          c.fillStyle = '#fdba74';
+          c.beginPath();
+          c.moveTo(0, -48);
+          c.lineTo(0, 16);
+          c.lineTo(-12, 14);
+          c.closePath();
+          c.fill();
+          // Carrot ridges
+          c.strokeStyle = '#c2410c';
+          c.lineWidth = 2;
+          c.beginPath();
+          c.moveTo(-5, -16); c.lineTo(2, -16);
+          c.moveTo(-2, -2); c.lineTo(7, -2);
+          c.moveTo(-7, 6); c.lineTo(1, 6);
+          c.stroke();
+          // Leafy top handle
+          c.fillStyle = '#22c55e';
+          c.beginPath();
+          c.ellipse(-6, 30, 5, 14, -0.25, 0, Math.PI * 2);
+          c.ellipse(6, 30, 5, 14, 0.25, 0, Math.PI * 2);
+          c.ellipse(0, 32, 5, 15, 0, 0, Math.PI * 2);
+          c.fill();
+        } else if (weaponId === 'katana') {
+          // Samurai Katana
+          c.fillStyle = '#f8fafc';
+          c.beginPath();
+          c.moveTo(-2, -50);
+          c.lineTo(6, -38);
+          c.lineTo(4, 12);
+          c.lineTo(-4, 12);
+          c.closePath();
+          c.fill();
+          c.fillStyle = '#94a3b8';
+          c.fillRect(-4, -36, 3.5, 48);
+          // Tsuba guard
+          c.fillStyle = '#f59e0b';
+          c.fillRect(-13, 10, 26, 5);
+          // Wrapped tsuka handle
+          c.fillStyle = '#1e293b';
+          c.fillRect(-4.5, 15, 9, 28);
+          c.strokeStyle = '#dc2626';
+          c.lineWidth = 2;
+          for (let y = 18; y <= 38; y += 6) {
+            c.beginPath();
+            c.moveTo(-4, y);
+            c.lineTo(4, y + 3);
+            c.stroke();
+          }
+        } else if (weaponId === 'trident') {
+          // Golden Trident
+          c.fillStyle = '#fbbf24';
+          // Center prong
+          c.beginPath();
+          c.moveTo(0, -50);
+          c.lineTo(5, -26);
+          c.lineTo(2.5, -26);
+          c.lineTo(2.5, 44);
+          c.lineTo(-2.5, 44);
+          c.lineTo(-2.5, -26);
+          c.lineTo(-5, -26);
+          c.closePath();
+          c.fill();
+          // Outer prongs + crossbar
+          c.strokeStyle = '#fde047';
+          c.lineWidth = 3.5;
+          c.beginPath();
+          c.moveTo(-13, -38);
+          c.lineTo(-13, -14);
+          c.quadraticCurveTo(0, -6, 13, -14);
+          c.lineTo(13, -38);
+          c.stroke();
+          // Tips
+          c.fillStyle = '#fef08a';
+          c.beginPath();
+          c.moveTo(-13, -44); c.lineTo(-17, -34); c.lineTo(-9, -34); c.closePath();
+          c.moveTo(13, -44); c.lineTo(9, -34); c.lineTo(17, -34); c.closePath();
+          c.fill();
+          // Grip wrap
+          c.fillStyle = '#92400e';
+          c.fillRect(-4, 16, 8, 22);
+        } else if (weaponId === 'lightning') {
+          // Lightning Bolt
+          c.fillStyle = '#38bdf8';
+          c.beginPath();
+          c.moveTo(3, -50);
+          c.lineTo(-14, -8);
+          c.lineTo(-1, -8);
+          c.lineTo(-11, 22);
+          c.lineTo(15, -16);
+          c.lineTo(2, -16);
+          c.closePath();
+          c.fill();
+          c.fillStyle = '#fef08a';
+          c.beginPath();
+          c.moveTo(2, -46);
+          c.lineTo(-10, -10);
+          c.lineTo(2, -10);
+          c.lineTo(-7, 16);
+          c.lineTo(11, -14);
+          c.lineTo(-1, -14);
+          c.closePath();
+          c.fill();
+          // Handle
+          c.fillStyle = '#1e293b';
+          c.fillRect(-4.5, 18, 9, 24);
+          c.fillStyle = '#38bdf8';
+          c.fillRect(-9, 16, 18, 4);
+        } else if (weaponId === 'laser') {
+          // Cyber Laser Sword (glowing neon cyan blade)
+          c.save();
+          c.shadowColor = '#22d3ee';
+          c.shadowBlur = 16;
+          c.fillStyle = '#06b6d4';
+          c.beginPath();
+          c.roundRect(-5.5, -49, 11, 60, 5.5);
+          c.fill();
+          c.fillStyle = '#ecfeff';
+          c.beginPath();
+          c.roundRect(-2.5, -46, 5, 55, 2.5);
+          c.fill();
+          c.restore();
+          // Metallic sci-fi hilt
+          c.fillStyle = '#334155';
+          c.fillRect(-6, 10, 12, 32);
+          c.fillStyle = '#94a3b8';
+          c.fillRect(-10, 9, 20, 5);
+          c.fillStyle = '#22d3ee';
+          c.fillRect(-3, 20, 6, 12);
+        } else if (weaponId === 'flame') {
+          // Dragon Flame Blade
+          c.save();
+          c.shadowColor = '#f97316';
+          c.shadowBlur = 12;
+          c.fillStyle = '#ea580c';
+          c.beginPath();
+          c.moveTo(0, -50);
+          c.bezierCurveTo(14, -30, -8, -14, 10, 12);
+          c.lineTo(-10, 12);
+          c.bezierCurveTo(-12, -12, 6, -24, 0, -50);
+          c.closePath();
+          c.fill();
+          c.fillStyle = '#fde047';
+          c.beginPath();
+          c.moveTo(0, -45);
+          c.bezierCurveTo(8, -26, -4, -14, 5, 10);
+          c.lineTo(-5, 10);
+          c.bezierCurveTo(-7, -10, 3, -22, 0, -45);
+          c.closePath();
+          c.fill();
+          c.restore();
+          // Dragon crossguard & hilt
+          c.fillStyle = '#7c2d12';
+          c.fillRect(-4.5, 14, 9, 26);
+          c.fillStyle = '#f59e0b';
+          c.beginPath();
+          c.moveTo(-14, 10); c.lineTo(0, 16); c.lineTo(14, 10); c.lineTo(10, 16); c.lineTo(-10, 16); c.closePath();
+          c.fill();
+          c.fillStyle = '#ef4444';
+          c.beginPath();
+          c.arc(0, 42, 5.5, 0, Math.PI * 2);
+          c.fill();
+        } else if (weaponId === 'kunai') {
+          // Shadow Kunai
+          c.fillStyle = '#475569';
+          c.beginPath();
+          c.moveTo(0, -50);
+          c.lineTo(11, -14);
+          c.lineTo(3, 6);
+          c.lineTo(-3, 6);
+          c.lineTo(-11, -14);
+          c.closePath();
+          c.fill();
+          c.fillStyle = '#94a3b8';
+          c.beginPath();
+          c.moveTo(0, -50);
+          c.lineTo(0, 6);
+          c.lineTo(-3, 6);
+          c.lineTo(-11, -14);
+          c.closePath();
+          c.fill();
+          // Wrapped shaft
+          c.fillStyle = '#1e293b';
+          c.fillRect(-3.5, 6, 7, 24);
+          c.fillStyle = '#ef4444';
+          c.fillRect(-4, 12, 8, 4);
+          c.fillRect(-4, 20, 8, 4);
+          // Ring pommel
+          c.strokeStyle = '#cbd5e1';
+          c.lineWidth = 3.5;
+          c.beginPath();
+          c.arc(0, 38, 7.5, 0, Math.PI * 2);
+          c.stroke();
+        } else if (weaponId === 'crystal') {
+          // Ice Crystal Shard
+          c.save();
+          c.shadowColor = '#38bdf8';
+          c.shadowBlur = 10;
+          c.fillStyle = '#7dd3fc';
+          c.beginPath();
+          c.moveTo(0, -50);
+          c.lineTo(12, -20);
+          c.lineTo(8, 12);
+          c.lineTo(-8, 12);
+          c.lineTo(-12, -20);
+          c.closePath();
+          c.fill();
+          c.fillStyle = '#e0f2fe';
+          c.beginPath();
+          c.moveTo(0, -50);
+          c.lineTo(0, 12);
+          c.lineTo(-8, 12);
+          c.lineTo(-12, -20);
+          c.closePath();
+          c.fill();
+          c.restore();
+          // Frost guard & hilt
+          c.fillStyle = '#0284c7';
+          c.beginPath();
+          c.moveTo(-13, 10); c.lineTo(0, 18); c.lineTo(13, 10); c.lineTo(0, 6); c.closePath();
+          c.fill();
+          c.fillStyle = '#0f172a';
+          c.fillRect(-4, 16, 8, 24);
+          c.fillStyle = '#bae6fd';
+          c.beginPath();
+          c.arc(0, 42, 5, 0, Math.PI * 2);
+          c.fill();
+        } else if (weaponId === 'emerald') {
+          // Venom Emerald Dirk
+          c.save();
+          c.shadowColor = '#10b981';
+          c.shadowBlur = 10;
+          c.fillStyle = '#10b981';
+          c.beginPath();
+          c.moveTo(0, -50);
+          c.lineTo(9, -28);
+          c.lineTo(5, -22);
+          c.lineTo(10, -10);
+          c.lineTo(5, -4);
+          c.lineTo(7, 12);
+          c.lineTo(-7, 12);
+          c.lineTo(-5, -4);
+          c.lineTo(-10, -10);
+          c.lineTo(-5, -22);
+          c.lineTo(-9, -28);
+          c.closePath();
+          c.fill();
+          c.fillStyle = '#a7f3d0';
+          c.fillRect(-1.5, -42, 3, 52);
+          c.restore();
+          // Gold serpent guard
+          c.fillStyle = '#f59e0b';
+          c.fillRect(-13, 10, 26, 5);
+          c.fillStyle = '#064e3b';
+          c.fillRect(-4.5, 15, 9, 25);
+          c.fillStyle = '#34d399';
+          c.beginPath();
+          c.arc(0, 42, 5.5, 0, Math.PI * 2);
+          c.fill();
+        } else if (weaponId === 'galaxy') {
+          // Cosmic Starblade
+          c.save();
+          c.shadowColor = '#c084fc';
+          c.shadowBlur = 14;
+          c.fillStyle = '#7e22ce';
+          c.beginPath();
+          c.moveTo(0, -52);
+          c.lineTo(10, -16);
+          c.lineTo(7, 12);
+          c.lineTo(-7, 12);
+          c.lineTo(-10, -16);
+          c.closePath();
+          c.fill();
+          c.fillStyle = '#e879f9';
+          c.beginPath();
+          c.moveTo(0, -52);
+          c.lineTo(4, 12);
+          c.lineTo(-4, 12);
+          c.closePath();
+          c.fill();
+          c.restore();
+          // Gold star crossguard
+          c.fillStyle = '#facc15';
+          c.beginPath();
+          c.moveTo(-15, 11); c.lineTo(-4, 8); c.lineTo(0, 2); c.lineTo(4, 8); c.lineTo(15, 11);
+          c.lineTo(5, 16); c.lineTo(0, 21); c.lineTo(-5, 16); c.closePath();
+          c.fill();
+          // Starlight core dots
+          c.fillStyle = '#fef08a';
+          c.beginPath();
+          c.arc(0, -24, 2.2, 0, Math.PI * 2);
+          c.arc(0, -8, 2.2, 0, Math.PI * 2);
+          c.fill();
+          // Hilt
+          c.fillStyle = '#312e81';
+          c.fillRect(-4.5, 18, 9, 22);
+          c.fillStyle = '#facc15';
+          c.beginPath();
+          c.arc(0, 42, 5.5, 0, Math.PI * 2);
+          c.fill();
+        }
+        c.restore();
+      }
+
+      function drawTargetDisc(c, radius, levelInfo, hitFlash, woodTheme) {
+        c.save();
+        if (levelInfo.isBoss && levelInfo.bossTheme) {
+          const bt = levelInfo.bossTheme;
+          // Boss Rim
+          c.beginPath();
+          c.arc(0, 0, radius, 0, Math.PI * 2);
+          c.fillStyle = bt.rim;
+          c.fill();
+
+          // Boss Outer Decorative Notches / Spikes
+          const spikes = 12;
+          for (let i = 0; i < spikes; i++) {
+            const a = (i / spikes) * Math.PI * 2;
+            c.save();
+            c.rotate(a);
+            c.fillStyle = bt.core;
+            c.beginPath();
+            c.moveTo(-7, -radius + 2);
+            c.lineTo(0, -radius - 10);
+            c.lineTo(7, -radius + 2);
+            c.closePath();
+            c.fill();
+            c.restore();
+          }
+
+          // Boss Body
+          c.beginPath();
+          c.arc(0, 0, radius - 8, 0, Math.PI * 2);
+          c.fillStyle = bt.dark;
+          c.fill();
+
+          // Concentric energy ring
+          c.beginPath();
+          c.arc(0, 0, radius - 22, 0, Math.PI * 2);
+          c.strokeStyle = bt.core;
+          c.lineWidth = 4;
+          c.stroke();
+
+          // Radial lines
+          c.strokeStyle = bt.accent;
+          c.lineWidth = 2.5;
+          for (let i = 0; i < 6; i++) {
+            const a = (i / 6) * Math.PI * 2;
+            c.beginPath();
+            c.moveTo(Math.cos(a) * 24, Math.sin(a) * 24);
+            c.lineTo(Math.cos(a) * (radius - 12), Math.sin(a) * (radius - 12));
+            c.stroke();
+          }
+
+          // Boss Emblem Core
+          c.beginPath();
+          c.arc(0, 0, 26, 0, Math.PI * 2);
+          c.fillStyle = bt.core;
+          c.fill();
+
+          c.font = '28px sans-serif';
+          c.textAlign = 'center';
+          c.textBaseline = 'middle';
+          c.fillText(bt.emoji, 0, 2);
+        } else {
+          const wt = woodTheme || getWoodById(playerData.equippedWood);
+          // Bark outer rim
+          c.beginPath();
+          c.arc(0, 0, radius, 0, Math.PI * 2);
+          c.fillStyle = wt.bark;
+          c.fill();
+
+          // Inner wood face
+          c.beginPath();
+          c.arc(0, 0, radius - 8, 0, Math.PI * 2);
+          c.fillStyle = wt.face;
+          c.fill();
+
+          // Wood grain rings
+          const rings = [radius - 20, radius - 36, radius - 52, radius - 66];
+          c.strokeStyle = wt.ring;
+          c.lineWidth = 2.5;
+          for (let i = 0; i < rings.length; i++) {
+            if (rings[i] <= 4) continue;
+            c.beginPath();
+            c.arc(0, 0, rings[i], 0, Math.PI * 2);
+            c.stroke();
+          }
+
+          // Wood cracks for rotation readability
+          c.strokeStyle = wt.crack;
+          c.lineWidth = 3;
+          c.lineCap = 'round';
+          const cracks = [0.2, 2.1, 4.0];
+          for (let i = 0; i < cracks.length; i++) {
+            const a = cracks[i];
+            c.beginPath();
+            c.moveTo(Math.cos(a) * (radius * 0.16), Math.sin(a) * (radius * 0.16));
+            c.lineTo(Math.cos(a + 0.08) * (radius - 14), Math.sin(a + 0.08) * (radius - 14));
+            c.stroke();
+          }
+
+          // Center knot
+          c.beginPath();
+          c.arc(0, 0, Math.max(4, radius * 0.11), 0, Math.PI * 2);
+          c.fillStyle = wt.crack;
+          c.fill();
+        }
+
+        if (hitFlash > 0) {
+          c.beginPath();
+          c.arc(0, 0, radius, 0, Math.PI * 2);
+          c.fillStyle = 'rgba(255, 255, 255, ' + (hitFlash * 0.45).toFixed(2) + ')';
+          c.fill();
+        }
+        c.restore();
+      }
+
+      function drawBonusItem(c, type) {
+        c.save();
+        if (type === 'apple') {
+          // Subtle glow
+          c.beginPath();
+          c.arc(0, 0, 18, 0, Math.PI * 2);
+          c.fillStyle = 'rgba(239, 68, 68, 0.25)';
+          c.fill();
+          // Apple body
+          c.beginPath();
+          c.arc(-3, 2, 10, 0, Math.PI * 2);
+          c.arc(3, 2, 10, 0, Math.PI * 2);
+          c.fillStyle = '#ef4444';
+          c.fill();
+          // Specular dot
+          c.beginPath();
+          c.arc(-5, -2, 3, 0, Math.PI * 2);
+          c.fillStyle = '#fca5a5';
+          c.fill();
+          // Leaf & stem
+          c.strokeStyle = '#78350f';
+          c.lineWidth = 2.5;
+          c.beginPath();
+          c.moveTo(0, -6);
+          c.lineTo(1, -13);
+          c.stroke();
+          c.fillStyle = '#22c55e';
+          c.beginPath();
+          c.ellipse(5, -10, 5, 3, -0.4, 0, Math.PI * 2);
+          c.fill();
+        } else {
+          // Gold Coin
+          c.beginPath();
+          c.arc(0, 0, 18, 0, Math.PI * 2);
+          c.fillStyle = 'rgba(251, 191, 36, 0.25)';
+          c.fill();
+          c.beginPath();
+          c.arc(0, 0, 13, 0, Math.PI * 2);
+          c.fillStyle = '#f59e0b';
+          c.fill();
+          c.lineWidth = 2.5;
+          c.strokeStyle = '#fef08a';
+          c.stroke();
+          c.fillStyle = '#fffbeb';
+          c.fillRect(-2, -6, 4, 12);
+        }
+        c.restore();
+      }
+
+      function renderShopPreviews() {
+        const wCanvases = document.querySelectorAll('canvas[data-weapon-preview]');
+        for (let i = 0; i < wCanvases.length; i++) {
+          const cv = wCanvases[i];
+          const wId = cv.getAttribute('data-weapon-preview');
+          const dpr = Math.min(window.devicePixelRatio || 1, 2);
+          cv.width = 64 * dpr;
+          cv.height = 64 * dpr;
+          const sc = cv.getContext('2d');
+          sc.setTransform(dpr, 0, 0, dpr, 0, 0);
+          sc.clearRect(0, 0, 64, 64);
+          sc.save();
+          sc.translate(32, 32);
+          sc.rotate(-Math.PI * 0.16);
+          drawWeaponShape(sc, wId, 0.62);
+          sc.restore();
+        }
+
+        const woodCanvases = document.querySelectorAll('canvas[data-wood-preview]');
+        for (let i = 0; i < woodCanvases.length; i++) {
+          const cv = woodCanvases[i];
+          const woodId = cv.getAttribute('data-wood-preview');
+          const dpr = Math.min(window.devicePixelRatio || 1, 2);
+          cv.width = 64 * dpr;
+          cv.height = 64 * dpr;
+          const sc = cv.getContext('2d');
+          sc.setTransform(dpr, 0, 0, dpr, 0, 0);
+          sc.clearRect(0, 0, 64, 64);
+          sc.save();
+          sc.translate(32, 32);
+          drawTargetDisc(sc, 27, { isBoss: false }, 0, getWoodById(woodId));
+          sc.restore();
+        }
+      }
+
+      /* =====================================================================
+         5. GAME STATE MACHINE & SIMULATION LOOP
+         ===================================================================== */
+      // States: 'title', 'playing', 'paused', 'levelcomplete', 'gameover', 'shop', 'levels'
+      let appState = 'title';
+      let activeShopTab = 'weapons'; // 'weapons' | 'woods' | 'backgrounds'
+      let stateBeforePause = 'playing';
+      let activeAdOverlayOpen = false;
+
+      let currentLevelNum = 1;
+      let levelConfig = generateLevel(1);
+      let runScore = 0;
+      let knivesRemaining = 6;
+      let stuckKnives = []; // { localAngle: number, weaponId: string, isObstacle: boolean }
+      let targetItems = []; // { localAngle: number, type: 'apple'|'coin', collected: boolean }
+
+      let targetAngle = 0;
+      let levelElapsed = 0;
+      let targetRecoil = 0;
+      let targetFlash = 0;
+      let shakeTrauma = 0;
+      let hitstopTimer = 0;
+      let targetShattered = false;
+      let levelCompleteTimer = 0;
+      let gameOverTimer = 0;
+      let pendingGameOver = false;
+      let pendingLevelComplete = false;
+      let lastLevelCoinsEarned = 10;
+      let secondChanceUsedThisLevel = false;
+      let doubleCoinsUsedThisClear = false;
+      let bossBannerTimer = 0;
+
+      // Active flying knife (or null)
+      let flyingKnife = null; // { y: number, weaponId: string }
+      let queuedThrow = false;
+      let throwCooldown = 0;
+
+      // Menu centerpiece preview
+      let menuAngle = 0;
+      let menuPointerTilt = 0;
+
+      // DOM Refs
+      const hudLevelEl = document.getElementById('hud-level');
+      const hudScoreEl = document.getElementById('hud-score');
+      const hudCoinsValEl = document.getElementById('hud-coins-val');
+      const btnPause = document.getElementById('btn-pause');
+      const btnSound = document.getElementById('btn-sound');
+      const bossBannerEl = document.getElementById('boss-banner');
+
+      const menuOverlay = document.getElementById('menu-overlay');
+      const levelsOverlay = document.getElementById('levels-overlay');
+      const shopOverlay = document.getElementById('shop-overlay');
+      const pauseOverlay = document.getElementById('pause-overlay');
+      const lcOverlay = document.getElementById('level-complete-overlay');
+      const goOverlay = document.getElementById('gameover-overlay');
+      const adOverlay = document.getElementById('ad-overlay');
+
+      const menuCurLevelEl = document.getElementById('menu-current-level');
+      const menuBestScoreEl = document.getElementById('menu-best-score');
+      const menuEquippedEl = document.getElementById('menu-equipped-weapon');
+      const weaponGridEl = document.getElementById('weapon-grid');
+      const levelsSummaryEl = document.getElementById('levels-summary');
+      const levelsGridEl = document.getElementById('levels-grid');
+      const shopTabButtons = document.querySelectorAll('[data-shop-tab]');
+
+      const lcTitleEl = document.getElementById('lc-title');
+      const lcSubtitleEl = document.getElementById('lc-subtitle');
+      const lcScoreEl = document.getElementById('lc-score');
+      const lcCoinsEl = document.getElementById('lc-coins');
+      const btnDoubleCoins = document.getElementById('btn-double-coins');
+
+      const goLevelEl = document.getElementById('go-level');
+      const goScoreEl = document.getElementById('go-score');
+      const goBestEl = document.getElementById('go-best');
+      const btnSecondChance = document.getElementById('btn-second-chance');
+
+      const adTimerEl = document.getElementById('ad-timer');
+      const adProgressEl = document.getElementById('ad-progress');
+      const adDescEl = document.getElementById('ad-desc');
+
+      function applyBackgroundTheme() {
+        const bg = getBackgroundById(playerData.equippedBackground);
+        const rootStyle = document.documentElement.style;
+        rootStyle.setProperty('--bg-top', bg.top);
+        rootStyle.setProperty('--bg-mid', bg.mid);
+        rootStyle.setProperty('--bg-bot', bg.bot);
+      }
+
+      function setBodyState(state) {
+        appState = state;
+        const bodyState = state === 'levelcomplete' ? 'gameover' : state;
+        document.body.dataset.state = bodyState;
+        syncOverlays();
+        updateHud();
+      }
+
+      function setOverlayActive(el, active) {
+        el.classList.toggle('active', active);
+        el.setAttribute('aria-hidden', active ? 'false' : 'true');
+      }
+
+      function syncOverlays() {
+        setOverlayActive(menuOverlay, appState === 'title');
+        setOverlayActive(levelsOverlay, appState === 'levels');
+        setOverlayActive(shopOverlay, appState === 'shop');
+        setOverlayActive(pauseOverlay, appState === 'paused');
+        setOverlayActive(lcOverlay, appState === 'levelcomplete');
+        setOverlayActive(goOverlay, appState === 'gameover');
+        btnPause.hidden = appState !== 'playing';
+      }
+
+      function updateHud() {
+        const displayLvl = (appState === 'title' || appState === 'shop' || appState === 'levels')
+          ? playerData.currentLevel
+          : currentLevelNum;
+        const isBoss = displayLvl % 5 === 0;
+        hudLevelEl.textContent = isBoss ? ('BOSS ' + displayLvl) : ('LVL ' + displayLvl);
+        hudLevelEl.classList.toggle('boss', isBoss);
+        hudScoreEl.textContent = String(Math.floor(runScore));
+        hudCoinsValEl.textContent = String(Math.floor(playerData.coins));
+        btnSound.textContent = SoundFX.isAudioActive() ? '🔊' : '🔇';
+        menuCurLevelEl.textContent = String(playerData.currentLevel);
+        menuBestScoreEl.textContent = String(playerData.bestScore);
+        const eq = getWeaponById(playerData.equippedWeapon);
+        menuEquippedEl.textContent = eq.name;
+      }
+
+      function buildLevelsGrid() {
+        const summary = getLevelTrackSummary(playerData.currentLevel, 30);
+        levelsSummaryEl.innerHTML =
+          '<span>Passed: <strong>' + summary.passedCount + '</strong></span>' +
+          '<span class="sep-dot" aria-hidden="true">·</span>' +
+          '<span>Current: <strong>' + summary.currentLevel + '</strong></span>' +
+          '<span class="sep-dot" aria-hidden="true">·</span>' +
+          '<span>Remaining: <strong>' + summary.remainingCount + '+</strong></span>';
+
+        levelsGridEl.innerHTML = '';
+        for (let i = 0; i < summary.levels.length; i++) {
+          const item = summary.levels[i];
+          const tile = document.createElement('button');
+          tile.type = 'button';
+          tile.className = 'level-tile ' + item.status + (item.isBoss ? ' boss' : '');
+          tile.setAttribute('data-level-num', String(item.level));
+
+          const numEl = document.createElement('span');
+          numEl.className = 'level-tile-num tabular';
+          numEl.textContent = item.isBoss && item.bossTheme
+            ? (item.bossTheme.emoji + ' ' + item.level)
+            : String(item.level);
+
+          const statusEl = document.createElement('span');
+          statusEl.className = 'level-tile-status';
+          if (item.status === 'passed') {
+            statusEl.textContent = '✓ PASSED';
+            tile.setAttribute('aria-label', 'Play passed level ' + item.level);
+          } else if (item.status === 'current') {
+            statusEl.textContent = '▶ PLAY';
+            tile.setAttribute('aria-label', 'Play current level ' + item.level);
+          } else {
+            statusEl.textContent = item.isBoss ? '🔒 BOSS' : '🔒 LOCKED';
+            tile.disabled = true;
+            tile.setAttribute('aria-label', 'Level ' + item.level + ' locked');
+          }
+
+          if (!tile.disabled) {
+            tile.addEventListener('click', (function (targetLvl) {
+              return function () {
+                SoundFX.playClick();
+                setupLevel(targetLvl, true);
+                setBodyState('playing');
+                startLoop();
+              };
+            })(item.level));
+          }
+
+          tile.appendChild(numEl);
+          tile.appendChild(statusEl);
+          levelsGridEl.appendChild(tile);
+        }
+      }
+
+      function syncShopTabs() {
+        for (let i = 0; i < shopTabButtons.length; i++) {
+          const btn = shopTabButtons[i];
+          const tab = btn.getAttribute('data-shop-tab');
+          const active = tab === activeShopTab;
+          btn.classList.toggle('active', active);
+          btn.setAttribute('aria-selected', active ? 'true' : 'false');
+        }
+      }
+
+      function buildShopGrid() {
+        syncShopTabs();
+        weaponGridEl.innerHTML = '';
+
+        let list = WEAPONS;
+        let unlockedList = playerData.unlockedWeapons;
+        let equippedId = playerData.equippedWeapon;
+        if (activeShopTab === 'woods') {
+          list = WOOD_TYPES;
+          unlockedList = playerData.unlockedWoods;
+          equippedId = playerData.equippedWood;
+        } else if (activeShopTab === 'backgrounds') {
+          list = BACKGROUNDS;
+          unlockedList = playerData.unlockedBackgrounds;
+          equippedId = playerData.equippedBackground;
+        }
+
+        for (let i = 0; i < list.length; i++) {
+          const item = list[i];
+          const isUnlocked = unlockedList.indexOf(item.id) !== -1;
+          const isEquipped = equippedId === item.id;
+          const canAfford = playerData.coins >= item.price;
+
+          const card = document.createElement('div');
+          card.className = 'weapon-card' + (isEquipped ? ' equipped' : '');
+
+          const previewBox = document.createElement('div');
+          previewBox.className = 'weapon-preview';
+
+          if (activeShopTab === 'weapons') {
+            const pvCanvas = document.createElement('canvas');
+            pvCanvas.setAttribute('data-weapon-preview', item.id);
+            pvCanvas.style.width = '64px';
+            pvCanvas.style.height = '64px';
+            previewBox.appendChild(pvCanvas);
+          } else if (activeShopTab === 'woods') {
+            const pvCanvas = document.createElement('canvas');
+            pvCanvas.setAttribute('data-wood-preview', item.id);
+            pvCanvas.style.width = '64px';
+            pvCanvas.style.height = '64px';
+            previewBox.appendChild(pvCanvas);
+          } else {
+            const swatch = document.createElement('div');
+            swatch.className = 'bg-swatch';
+            swatch.style.background = 'radial-gradient(circle at 50% 35%, ' + item.glow + ', transparent 70%), linear-gradient(180deg, ' + item.top + ' 0%, ' + item.mid + ' 55%, ' + item.bot + ' 100%)';
+            previewBox.appendChild(swatch);
+          }
+
+          const nameEl = document.createElement('div');
+          nameEl.className = 'weapon-name';
+          nameEl.textContent = item.emoji + ' ' + item.name;
+
+          const actionBtn = document.createElement('button');
+          actionBtn.type = 'button';
+          actionBtn.className = 'btn weapon-action';
+          actionBtn.setAttribute('data-shop-category', activeShopTab);
+          actionBtn.setAttribute('data-item-id', item.id);
+          if (activeShopTab === 'weapons') {
+            actionBtn.setAttribute('data-weapon-id', item.id);
+          }
+
+          if (isEquipped) {
+            actionBtn.className += ' is-equipped';
+            actionBtn.textContent = 'EQUIPPED';
+            actionBtn.disabled = true;
+          } else if (isUnlocked) {
+            actionBtn.className += ' btn-secondary';
+            actionBtn.textContent = 'EQUIP';
+          } else if (canAfford) {
+            actionBtn.className += ' btn-gold';
+            actionBtn.textContent = 'BUY ' + item.price + ' 🪙';
+          } else {
+            actionBtn.className += ' is-locked';
+            actionBtn.textContent = '🎬 +50 🪙 (' + item.price + ')';
+            actionBtn.setAttribute('aria-label', 'Watch video for 50 coins to unlock ' + item.name + ' (' + item.price + ' coins)');
+          }
+
+          actionBtn.addEventListener('click', function () {
+            handleShopItemAction(activeShopTab, item.id);
+          });
+
+          card.appendChild(previewBox);
+          card.appendChild(nameEl);
+          card.appendChild(actionBtn);
+          weaponGridEl.appendChild(card);
+        }
+        renderShopPreviews();
+      }
+
+      function handleShopItemAction(category, itemId) {
+        let item;
+        let unlockedList;
+        if (category === 'weapons') {
+          item = getWeaponById(itemId);
+          unlockedList = playerData.unlockedWeapons;
+        } else if (category === 'woods') {
+          item = getWoodById(itemId);
+          unlockedList = playerData.unlockedWoods;
+        } else {
+          item = getBackgroundById(itemId);
+          unlockedList = playerData.unlockedBackgrounds;
+        }
+
+        const isUnlocked = unlockedList.indexOf(item.id) !== -1;
+        if (isUnlocked) {
+          if (category === 'weapons') playerData.equippedWeapon = item.id;
+          else if (category === 'woods') playerData.equippedWood = item.id;
+          else {
+            playerData.equippedBackground = item.id;
+            applyBackgroundTheme();
+          }
+          SoundFX.playClick();
+          savePlayerData();
+          updateHud();
+          buildShopGrid();
+          renderScene();
+          return;
+        }
+
+        if (playerData.coins >= item.price) {
+          playerData.coins -= item.price;
+          unlockedList.push(item.id);
+          if (category === 'weapons') playerData.equippedWeapon = item.id;
+          else if (category === 'woods') playerData.equippedWood = item.id;
+          else {
+            playerData.equippedBackground = item.id;
+            applyBackgroundTheme();
+          }
+          SoundFX.playSlice();
+          savePlayerData();
+          updateHud();
+          buildShopGrid();
+          renderScene();
+          return;
+        }
+
+        // Not enough coins yet -> trigger Rewarded Ad for +50 coins
+        SoundFX.playClick();
+        requestRewardedAd('Earn +50 Coins toward unlocking ' + item.name + '!', function () {
+          playerData.coins += 50;
+          savePlayerData();
+          updateHud();
+          buildShopGrid();
+        });
+      }
+
+      function setupLevel(levelNum, resetRunScore) {
+        currentLevelNum = Math.max(1, levelNum);
+        if (resetRunScore) {
+          runScore = 0;
+        }
+        levelConfig = generateLevel(currentLevelNum);
+        knivesRemaining = levelConfig.knivesToThrow;
+        stuckKnives = [];
+        for (let i = 0; i < levelConfig.obstacles.length; i++) {
+          stuckKnives.push({
+            localAngle: levelConfig.obstacles[i],
+            weaponId: 'classic',
+            isObstacle: true
+          });
+        }
+        targetItems = levelConfig.items.map(function (it) {
+          return { localAngle: it.localAngle, type: it.type, collected: false };
+        });
+
+        targetAngle = 0;
+        levelElapsed = 0;
+        targetRecoil = 0;
+        targetFlash = 0;
+        shakeTrauma = 0;
+        hitstopTimer = 0;
+        targetShattered = false;
+        pendingGameOver = false;
+        pendingLevelComplete = false;
+        levelCompleteTimer = 0;
+        gameOverTimer = 0;
+        flyingKnife = null;
+        queuedThrow = false;
+        throwCooldown = 0;
+        secondChanceUsedThisLevel = false;
+        doubleCoinsUsedThisClear = false;
+        slicedHalves = [];
+        shatterPieces = [];
+        deflectedKnives = [];
+
+        // Clear active particles & popups
+        for (let i = 0; i < MAX_PARTICLES; i++) particles[i].active = false;
+        for (let i = 0; i < MAX_POPUPS; i++) popups[i].active = false;
+
+        if (levelConfig.isBoss) {
+          bossBannerEl.textContent = 'BOSS STAGE! ' + levelConfig.bossTheme.emoji + ' ' + levelConfig.bossTheme.name.toUpperCase();
+          bossBannerEl.hidden = false;
+          bossBannerEl.classList.add('visible');
+          bossBannerTimer = 2.0;
+          SoundFX.playBossIntro();
+        } else {
+          bossBannerEl.classList.remove('visible');
+          bossBannerEl.hidden = true;
+          bossBannerTimer = 0;
+        }
+
+        updateHud();
+      }
+
+      function startGameFromMenu() {
+        SoundFX.playClick();
+        if (document.activeElement && typeof document.activeElement.blur === 'function') {
+          document.activeElement.blur();
+        }
+        setupLevel(playerData.currentLevel, true);
+        setBodyState('playing');
+        startLoop();
+      }
+
+      function triggerThrow() {
+        if (appState !== 'playing' || activeAdOverlayOpen) return;
+        if (targetShattered || pendingGameOver || pendingLevelComplete) return;
+        if (knivesRemaining <= 0) return;
+
+        if (flyingKnife || throwCooldown > 0) {
+          queuedThrow = true;
+          return;
+        }
+
+        flyingKnife = {
+          y: KNIFE_START_Y,
+          weaponId: playerData.equippedWeapon
+        };
+        knivesRemaining--;
+        throwCooldown = 0.04;
+        SoundFX.playThrow();
+      }
+
+      function triggerShatter() {
+        targetShattered = true;
+        pendingLevelComplete = true;
+        levelCompleteTimer = 0.85;
+        shakeTrauma = 0.95;
+        hitstopTimer = 0.055;
+        SoundFX.playShatter();
+
+        const isBoss = levelConfig.isBoss;
+        const wt = getWoodById(playerData.equippedWood);
+        const colors = isBoss && levelConfig.bossTheme
+          ? [levelConfig.bossTheme.rim, levelConfig.bossTheme.core, levelConfig.bossTheme.dark]
+          : [wt.face, wt.ring, wt.bark];
+
+        // Create 6 flying target pieces
+        shatterPieces = [];
+        for (let i = 0; i < 6; i++) {
+          const a0 = (i / 6) * Math.PI * 2 + targetAngle;
+          const a1 = ((i + 1) / 6) * Math.PI * 2 + targetAngle;
+          const mid = (a0 + a1) * 0.5;
+          const speed = 260 + Math.random() * 200;
+          shatterPieces.push({
+            x: TARGET_X,
+            y: TARGET_Y,
+            vx: Math.cos(mid) * speed,
+            vy: Math.sin(mid) * speed - 180,
+            rot: 0,
+            vrot: (Math.random() - 0.5) * 10,
+            a0: a0,
+            a1: a1,
+            color: colors[i % colors.length],
+            rimColor: isBoss && levelConfig.bossTheme ? levelConfig.bossTheme.core : wt.bark
+          });
+        }
+
+        // Eject stuck knives outward too
+        for (let i = 0; i < stuckKnives.length; i++) {
+          const sk = stuckKnives[i];
+          const worldAng = sk.localAngle + targetAngle;
+          deflectedKnives.push({
+            x: TARGET_X + Math.cos(worldAng) * (TARGET_RADIUS + 20),
+            y: TARGET_Y + Math.sin(worldAng) * (TARGET_RADIUS + 20),
+            vx: Math.cos(worldAng) * (240 + Math.random() * 140),
+            vy: Math.sin(worldAng) * (240 + Math.random() * 140) - 120,
+            rot: worldAng + Math.PI / 2,
+            vrot: (Math.random() - 0.5) * 12,
+            weaponId: sk.weaponId
+          });
+        }
+
+        spawnBurst(TARGET_X, TARGET_Y, 26, colors.concat(['#fde047', '#ffffff']), 140, 440, 5, 11, 'rect');
+
+        // Economy & Progression update (never downgrade currentLevel when replaying passed levels)
+        lastLevelCoinsEarned = levelConfig.clearReward;
+        playerData.coins += lastLevelCoinsEarned;
+        playerData.currentLevel = Math.max(playerData.currentLevel, currentLevelNum + 1);
+        if (runScore > playerData.bestScore) {
+          playerData.bestScore = runScore;
+        }
+        spawnPopup(TARGET_X, TARGET_Y - 20, '+' + lastLevelCoinsEarned + ' 🪙', '#fbbf24');
+        savePlayerData();
+        reportScore(runScore);
+        updateHud();
+      }
+
+      function showLevelCompleteModal() {
+        lcTitleEl.textContent = levelConfig.isBoss
+          ? ('BOSS ' + currentLevelNum + ' DEFEATED!')
+          : ('LEVEL ' + currentLevelNum + ' CLEARED!');
+        lcSubtitleEl.textContent = levelConfig.isBoss
+          ? 'Double boss bounty earned!'
+          : 'Target shattered cleanly!';
+        lcScoreEl.textContent = String(runScore);
+        lcCoinsEl.textContent = '+' + lastLevelCoinsEarned + ' 🪙';
+        btnDoubleCoins.hidden = doubleCoinsUsedThisClear;
+        btnDoubleCoins.disabled = doubleCoinsUsedThisClear;
+        setBodyState('levelcomplete');
+      }
+
+      function showGameOverModal() {
+        if (runScore > playerData.bestScore) {
+          playerData.bestScore = runScore;
+          savePlayerData();
+        }
+        reportScore(runScore);
+        goLevelEl.textContent = String(currentLevelNum);
+        goScoreEl.textContent = String(runScore);
+        goBestEl.textContent = String(playerData.bestScore);
+        btnSecondChance.hidden = secondChanceUsedThisLevel;
+        btnSecondChance.disabled = secondChanceUsedThisLevel;
+        setBodyState('gameover');
+      }
+
+      function reviveSecondChance() {
+        secondChanceUsedThisLevel = true;
+        pendingGameOver = false;
+        gameOverTimer = 0;
+        deflectedKnives = [];
+        flyingKnife = null;
+        queuedThrow = false;
+        // Give back the knife that collided so the player can finish the remaining knives
+        knivesRemaining = Math.max(1, knivesRemaining + 1);
+        setBodyState('playing');
+        startLoop();
+      }
+
+      /* =====================================================================
+         6. REWARDED ADS (YouTube Playables SDK + 10s Local Simulator)
+         ===================================================================== */
+      let adIntervalId = null;
+
+      function requestRewardedAd(description, onRewardGranted) {
+        if (activeAdOverlayOpen) return;
+        const yt = getYtGame();
+
+        if (yt && yt.ads && typeof yt.ads.requestRewardedAd === 'function') {
+          activeAdOverlayOpen = true;
+          const prevAudio = SoundFX.isManualMuted();
+          SoundFX.setYtAudioEnabled(false);
+          try {
+            yt.ads.requestRewardedAd().then(function (result) {
+              activeAdOverlayOpen = false;
+              SoundFX.setYtAudioEnabled(true);
+              if (!prevAudio) updateHud();
+              // Grant only after promise resolves (and if result isn't explicitly false)
+              if (result === undefined || result === null || result === true || (result && result.rewarded !== false)) {
+                onRewardGranted();
+              }
+            }).catch(function () {
+              activeAdOverlayOpen = false;
+              SoundFX.setYtAudioEnabled(true);
+              updateHud();
+            });
+          } catch (e) {
+            activeAdOverlayOpen = false;
+            SoundFX.setYtAudioEnabled(true);
+            updateHud();
+          }
+          return;
+        }
+
+        // Local Simulator: 10-second countdown + progress bar
+        activeAdOverlayOpen = true;
+        adDescEl.textContent = description || 'Watch until the timer finishes to claim your reward.';
+        let remaining = 10;
+        adTimerEl.textContent = '10s';
+        adProgressEl.style.width = '0%';
+        setOverlayActive(adOverlay, true);
+
+        const startTime = performance.now();
+        const totalMs = 10000;
+
+        if (adIntervalId) clearInterval(adIntervalId);
+        adIntervalId = setInterval(function () {
+          const elapsed = performance.now() - startTime;
+          const pct = Math.min(100, (elapsed / totalMs) * 100);
+          adProgressEl.style.width = pct.toFixed(1) + '%';
+          const secLeft = Math.max(0, Math.ceil((totalMs - elapsed) / 1000));
+          if (secLeft !== remaining) {
+            remaining = secLeft;
+            adTimerEl.textContent = remaining + 's';
+          }
+          if (elapsed >= totalMs) {
+            clearInterval(adIntervalId);
+            adIntervalId = null;
+            activeAdOverlayOpen = false;
+            setOverlayActive(adOverlay, false);
+            SoundFX.playSlice();
+            onRewardGranted();
+          }
+        }, 100);
+      }
+
+      /* =====================================================================
+         7. SIMULATION STEP & RENDERING LOOP (Proper RAF Lifecycle)
+         ===================================================================== */
+      let rafId = null;
+      let lastFrameTime = 0;
+
+      function stopLoop() {
+        if (rafId !== null) {
+          cancelAnimationFrame(rafId);
+          rafId = null;
+        }
+      }
+
+      function startLoop() {
+        stopLoop();
+        lastFrameTime = performance.now();
+        rafId = requestAnimationFrame(tick);
+      }
+
+      function updateSimulation(dt) {
+        // Boss banner timer
+        if (bossBannerTimer > 0) {
+          bossBannerTimer -= dt;
+          if (bossBannerTimer <= 0) {
+            bossBannerEl.classList.remove('visible');
+            bossBannerEl.hidden = true;
+          }
+        }
+
+        // Visual juice timers always run in real dt
+        shakeTrauma = Math.max(0, shakeTrauma - dt * 2.8);
+        targetRecoil = Math.max(0, targetRecoil - dt * 55);
+        targetFlash = Math.max(0, targetFlash - dt * 6);
+
+        for (let i = 0; i < MAX_PARTICLES; i++) {
+          const p = particles[i];
+          if (!p.active) continue;
+          p.life -= dt;
+          if (p.life <= 0) {
+            p.active = false;
+            continue;
+          }
+          p.vy += p.gravity * dt;
+          p.x += p.vx * dt;
+          p.y += p.vy * dt;
+          p.rot += p.vrot * dt;
+        }
+
+        for (let i = 0; i < MAX_POPUPS; i++) {
+          const fp = popups[i];
+          if (!fp.active) continue;
+          fp.life -= dt;
+          if (fp.life <= 0) {
+            fp.active = false;
+            continue;
+          }
+          fp.y += fp.vy * dt;
+        }
+
+        for (let i = slicedHalves.length - 1; i >= 0; i--) {
+          const h = slicedHalves[i];
+          h.vy += 760 * dt;
+          h.x += h.vx * dt;
+          h.y += h.vy * dt;
+          h.rot += h.vrot * dt;
+          h.life -= dt;
+          if (h.life <= 0) slicedHalves.splice(i, 1);
+        }
+
+        for (let i = shatterPieces.length - 1; i >= 0; i--) {
+          const sp = shatterPieces[i];
+          sp.vy += 820 * dt;
+          sp.x += sp.vx * dt;
+          sp.y += sp.vy * dt;
+          sp.rot += sp.vrot * dt;
+        }
+
+        for (let i = deflectedKnives.length - 1; i >= 0; i--) {
+          const dk = deflectedKnives[i];
+          dk.vy += 980 * dt;
+          dk.x += dk.vx * dt;
+          dk.y += dk.vy * dt;
+          dk.rot += dk.vrot * dt;
+          if (dk.y > LOGICAL_H + 140) deflectedKnives.splice(i, 1);
+        }
+
+        if (hitstopTimer > 0) {
+          hitstopTimer = Math.max(0, hitstopTimer - dt);
+          return;
+        }
+
+        if (pendingLevelComplete) {
+          levelCompleteTimer -= dt;
+          if (levelCompleteTimer <= 0) {
+            pendingLevelComplete = false;
+            showLevelCompleteModal();
+          }
+          return;
+        }
+
+        if (pendingGameOver) {
+          gameOverTimer -= dt;
+          if (gameOverTimer <= 0) {
+            pendingGameOver = false;
+            showGameOverModal();
+          }
+          return;
+        }
+
+        if (throwCooldown > 0) {
+          throwCooldown = Math.max(0, throwCooldown - dt);
+        }
+
+        // Rotate target
+        levelElapsed += dt;
+        const angVel = computeAngularVelocity(levelConfig.pattern, levelConfig.baseSpeed, levelElapsed);
+        targetAngle = normalizeAngle(targetAngle + angVel * dt);
+
+        // Move flying knife
+        if (flyingKnife) {
+          flyingKnife.y -= KNIFE_SPEED * dt;
+          // Tip of knife is at flyingKnife.y - 46; impact threshold at target bottom
+          const impactY = TARGET_Y + TARGET_RADIUS + 26;
+          if (flyingKnife.y <= impactY) {
+            const hitLocalAngle = normalizeAngle(Math.PI / 2 - targetAngle);
+            const stuckAngles = stuckKnives.map(function (sk) { return sk.localAngle; });
+
+            if (checkKnifeCollision(hitLocalAngle, stuckAngles, KNIFE_COLLISION_ANGLE)) {
+              // Collision -> Metallic clang + deflect + Game Over
+              SoundFX.playMetalClang();
+              shakeTrauma = 0.85;
+              hitstopTimer = 0.055;
+              spawnBurst(TARGET_X, TARGET_Y + TARGET_RADIUS + 10, 18, ['#ffffff', '#fbbf24', '#38bdf8', '#94a3b8'], 140, 380, 3, 6, 'spark');
+              deflectedKnives.push({
+                x: TARGET_X,
+                y: impactY,
+                vx: (Math.random() < 0.5 ? -1 : 1) * (160 + Math.random() * 140),
+                vy: 260,
+                rot: 0,
+                vrot: (Math.random() < 0.5 ? -1 : 1) * 14,
+                weaponId: flyingKnife.weaponId
+              });
+              flyingKnife = null;
+              queuedThrow = false;
+              pendingGameOver = true;
+              gameOverTimer = 0.52;
+            } else {
+              // Clean stick!
+              stuckKnives.push({
+                localAngle: hitLocalAngle,
+                weaponId: flyingKnife.weaponId,
+                isObstacle: false
+              });
+              flyingKnife = null;
+              runScore += 1;
+              if (runScore > playerData.bestScore) {
+                playerData.bestScore = runScore;
+              }
+              targetRecoil = 8;
+              targetFlash = 1;
+              shakeTrauma = Math.max(shakeTrauma, 0.25);
+              hitstopTimer = 0.022;
+              SoundFX.playWoodThud();
+
+              const wt = getWoodById(playerData.equippedWood);
+              const chipColors = levelConfig.isBoss && levelConfig.bossTheme
+                ? [levelConfig.bossTheme.core, levelConfig.bossTheme.rim, '#ffffff']
+                : [wt.face, wt.ring, '#fef3c7'];
+              spawnBurst(TARGET_X, TARGET_Y + TARGET_RADIUS, 8, chipColors, 80, 240, 3, 6, 'rect');
+
+              // Check bonus apples / coins hit
+              const hitItems = checkBonusHit(hitLocalAngle, targetItems, ITEM_HIT_ANGLE);
+              if (hitItems.length > 0) {
+                for (let h = 0; h < hitItems.length; h++) {
+                  const item = targetItems[hitItems[h]];
+                  item.collected = true;
+                  const worldAng = item.localAngle + targetAngle;
+                  const ix = TARGET_X + Math.cos(worldAng) * (TARGET_RADIUS + 18);
+                  const iy = TARGET_Y + Math.sin(worldAng) * (TARGET_RADIUS + 18);
+
+                  const sliceColors = item.type === 'apple'
+                    ? ['#ef4444', '#fca5a5', '#22c55e']
+                    : ['#fbbf24', '#fef08a', '#f59e0b'];
+                  spawnBurst(ix, iy, 14, sliceColors, 100, 290, 4, 7, 'circle');
+
+                  slicedHalves.push(
+                    { x: ix - 5, y: iy, vx: -130, vy: -140, rot: worldAng, vrot: -7, life: 0.7, type: item.type, side: -1 },
+                    { x: ix + 5, y: iy, vx: 130, vy: -140, rot: worldAng, vrot: 7, life: 0.7, type: item.type, side: 1 }
+                  );
+
+                  playerData.coins += 2;
+                  spawnPopup(ix, iy - 16, '+2 🪙', '#fbbf24');
+                }
+                SoundFX.playSlice();
+                savePlayerData();
+              }
+
+              reportScore(runScore);
+              updateHud();
+
+              if (knivesRemaining <= 0) {
+                triggerShatter();
+              } else if (queuedThrow) {
+                queuedThrow = false;
+                triggerThrow();
+              }
+            }
+          }
+        }
+      }
+
+      function renderScene() {
+        const rect = canvas.getBoundingClientRect();
+        if (rect.width <= 0 || rect.height <= 0) return;
+        const dpr = Math.min(window.devicePixelRatio || 1, 2);
+        const targetW = Math.round(rect.width * dpr);
+        const targetH = Math.round(rect.height * dpr);
+        if (canvas.width !== targetW || canvas.height !== targetH) {
+          canvas.width = targetW;
+          canvas.height = targetH;
+        }
+
+        // Uniform scale to fit 450 x 740 logical viewport cleanly inside any aspect ratio
+        const scale = Math.min(rect.width / LOGICAL_W, rect.height / LOGICAL_H);
+        const offsetX = (rect.width - LOGICAL_W * scale) * 0.5;
+        const offsetY = (rect.height - LOGICAL_H * scale) * 0.5;
+
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        ctx.clearRect(0, 0, rect.width, rect.height);
+
+        // Ambient radial spotlight behind target
+        ctx.save();
+        ctx.translate(offsetX, offsetY);
+        ctx.scale(scale, scale);
+
+        const bgTheme = getBackgroundById(playerData.equippedBackground);
+        const bgGrad = ctx.createRadialGradient(TARGET_X, TARGET_Y, 20, TARGET_X, TARGET_Y, 340);
+        if (appState === 'playing' && levelConfig.isBoss && levelConfig.bossTheme) {
+          bgGrad.addColorStop(0, 'rgba(239, 68, 68, 0.2)');
+        } else {
+          bgGrad.addColorStop(0, bgTheme.glow);
+        }
+        bgGrad.addColorStop(1, 'rgba(18, 18, 24, 0)');
+        ctx.fillStyle = bgGrad;
+        ctx.fillRect(0, 0, LOGICAL_W, LOGICAL_H);
+
+        // Camera shake transform
+        const shakeAmt = shakeTrauma * shakeTrauma * 11;
+        const sx = (Math.random() - 0.5) * 2 * shakeAmt;
+        const sy = (Math.random() - 0.5) * 2 * shakeAmt;
+        ctx.translate(sx, sy);
+
+        const activeWood = getWoodById(playerData.equippedWood);
+
+        if (appState === 'title' || appState === 'shop' || appState === 'levels') {
+          // Main Menu Centerpiece: Rotating target preview with equipped weapon & wood
+          const previewY = 266;
+          ctx.save();
+          ctx.translate(TARGET_X, previewY);
+          ctx.rotate(menuAngle + menuPointerTilt);
+          // Preview equipped weapons embedded
+          for (let i = 0; i < 3; i++) {
+            const a = (i / 3) * Math.PI * 2;
+            ctx.save();
+            ctx.rotate(a);
+            ctx.translate(TARGET_RADIUS + 20, 0);
+            ctx.rotate(-Math.PI / 2);
+            drawWeaponShape(ctx, playerData.equippedWeapon, 0.92);
+            ctx.restore();
+          }
+          drawTargetDisc(ctx, TARGET_RADIUS, { isBoss: false }, 0, activeWood);
+          ctx.restore();
+
+          // Equipped weapon floating below preview
+          ctx.save();
+          ctx.translate(TARGET_X, 442 + Math.sin(menuAngle * 2.2) * 5);
+          drawWeaponShape(ctx, playerData.equippedWeapon, 1.0);
+          ctx.restore();
+
+          ctx.restore();
+          return;
+        }
+
+        // Gameplay Scene
+        const drawTargetY = TARGET_Y - targetRecoil;
+
+        if (!targetShattered) {
+          ctx.save();
+          ctx.translate(TARGET_X, drawTargetY);
+          ctx.rotate(targetAngle);
+
+          // Draw stuck knives behind target rim
+          for (let i = 0; i < stuckKnives.length; i++) {
+            const sk = stuckKnives[i];
+            ctx.save();
+            ctx.rotate(sk.localAngle);
+            ctx.translate(TARGET_RADIUS + 18, 0);
+            ctx.rotate(-Math.PI / 2);
+            drawWeaponShape(ctx, sk.weaponId, 0.92);
+            ctx.restore();
+          }
+
+          // Draw attached apples / coins on outer rim
+          for (let i = 0; i < targetItems.length; i++) {
+            const item = targetItems[i];
+            if (item.collected) continue;
+            ctx.save();
+            ctx.rotate(item.localAngle);
+            ctx.translate(TARGET_RADIUS + 17, 0);
+            ctx.rotate(-targetAngle - item.localAngle); // keep upright
+            drawBonusItem(ctx, item.type);
+            ctx.restore();
+          }
+
+          // Draw Target Log / Boss Disc
+          drawTargetDisc(ctx, TARGET_RADIUS, levelConfig, targetFlash, activeWood);
+          ctx.restore();
+
+          // Visual telegraph ring when reverse pattern pauses briefly before reversing
+          const curVel = computeAngularVelocity(levelConfig.pattern, levelConfig.baseSpeed, levelElapsed);
+          if (levelConfig.pattern === 'reverse' && Math.abs(curVel) < 0.01) {
+            ctx.save();
+            ctx.beginPath();
+            ctx.arc(TARGET_X, drawTargetY, TARGET_RADIUS + 10, 0, Math.PI * 2);
+            ctx.strokeStyle = 'rgba(251, 191, 36, 0.55)';
+            ctx.lineWidth = 3;
+            ctx.setLineDash([10, 8]);
+            ctx.stroke();
+            ctx.restore();
+          }
+        }
+
+        // Shatter Pieces
+        for (let i = 0; i < shatterPieces.length; i++) {
+          const sp = shatterPieces[i];
+          ctx.save();
+          ctx.translate(sp.x, sp.y);
+          ctx.rotate(sp.rot);
+          ctx.beginPath();
+          ctx.moveTo(0, 0);
+          ctx.arc(0, 0, TARGET_RADIUS, sp.a0, sp.a1);
+          ctx.closePath();
+          ctx.fillStyle = sp.color;
+          ctx.fill();
+          ctx.lineWidth = 4;
+          ctx.strokeStyle = sp.rimColor;
+          ctx.stroke();
+          ctx.restore();
+        }
+
+        // Sliced Apple/Coin Halves
+        for (let i = 0; i < slicedHalves.length; i++) {
+          const h = slicedHalves[i];
+          ctx.save();
+          ctx.globalAlpha = Math.max(0, h.life / 0.7);
+          ctx.translate(h.x, h.y);
+          ctx.rotate(h.rot);
+          ctx.beginPath();
+          ctx.arc(0, 0, 11, h.side < 0 ? Math.PI * 0.5 : -Math.PI * 0.5, h.side < 0 ? Math.PI * 1.5 : Math.PI * 0.5);
+          ctx.closePath();
+          ctx.fillStyle = h.type === 'apple' ? '#ef4444' : '#f59e0b';
+          ctx.fill();
+          ctx.restore();
+        }
+
+        // Deflected Knives
+        for (let i = 0; i < deflectedKnives.length; i++) {
+          const dk = deflectedKnives[i];
+          ctx.save();
+          ctx.translate(dk.x, dk.y);
+          ctx.rotate(dk.rot);
+          drawWeaponShape(ctx, dk.weaponId, 0.92);
+          ctx.restore();
+        }
+
+        // Flying Knife
+        if (flyingKnife) {
+          ctx.save();
+          ctx.translate(TARGET_X, flyingKnife.y);
+          drawWeaponShape(ctx, flyingKnife.weaponId, 0.96);
+          ctx.restore();
+        }
+
+        // Active Ready Knife at Bottom Center
+        if (appState === 'playing' && knivesRemaining > 0 && !targetShattered && !pendingGameOver) {
+          ctx.save();
+          ctx.translate(TARGET_X, KNIFE_START_Y);
+          drawWeaponShape(ctx, playerData.equippedWeapon, 0.96);
+          ctx.restore();
+        }
+
+        // Remaining Knives Stack (Bottom-Left)
+        const stackX = 34;
+        const stackBaseY = LOGICAL_H - 44;
+        const totalInLevel = levelConfig.knivesToThrow;
+        const spacing = totalInLevel > 10 ? 22 : 27;
+        for (let i = 0; i < totalInLevel; i++) {
+          const isLeft = i < knivesRemaining;
+          const syPos = stackBaseY - i * spacing;
+          ctx.save();
+          ctx.translate(stackX, syPos);
+          ctx.rotate(-Math.PI * 0.35);
+          ctx.globalAlpha = isLeft ? 0.96 : 0.16;
+          drawWeaponShape(ctx, playerData.equippedWeapon, 0.34);
+          ctx.restore();
+        }
+
+        // Remaining count label near bottom-left stack
+        ctx.save();
+        ctx.fillStyle = '#cbd5e1';
+        ctx.font = 'bold 13px "Trebuchet MS", system-ui, sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText(knivesRemaining + ' LEFT', stackX + 2, LOGICAL_H - 12);
+        ctx.restore();
+
+        // Pooled Particles
+        for (let i = 0; i < MAX_PARTICLES; i++) {
+          const p = particles[i];
+          if (!p.active) continue;
+          ctx.save();
+          ctx.globalAlpha = Math.max(0, p.life / p.maxLife);
+          ctx.translate(p.x, p.y);
+          ctx.rotate(p.rot);
+          ctx.fillStyle = p.color;
+          if (p.shape === 'circle') {
+            ctx.beginPath();
+            ctx.arc(0, 0, p.size * 0.6, 0, Math.PI * 2);
+            ctx.fill();
+          } else if (p.shape === 'spark') {
+            ctx.fillRect(-p.size * 1.4, -1.5, p.size * 2.8, 3);
+          } else {
+            ctx.fillRect(-p.size * 0.5, -p.size * 0.5, p.size, p.size * 0.7);
+          }
+          ctx.restore();
+        }
+
+        // Floating Coin Popups
+        for (let i = 0; i < MAX_POPUPS; i++) {
+          const fp = popups[i];
+          if (!fp.active) continue;
+          ctx.save();
+          ctx.globalAlpha = Math.min(1, (fp.life / fp.maxLife) * 1.5);
+          ctx.font = '900 20px "Trebuchet MS", system-ui, sans-serif';
+          ctx.textAlign = 'center';
+          ctx.lineWidth = 4;
+          ctx.strokeStyle = '#0f172a';
+          ctx.strokeText(fp.text, fp.x, fp.y);
+          ctx.fillStyle = fp.color;
+          ctx.fillText(fp.text, fp.x, fp.y);
+          ctx.restore();
+        }
+
+        ctx.restore();
+      }
+
+      function tick(now) {
+        const rawDt = (now - lastFrameTime) / 1000;
+        lastFrameTime = now;
+        const dt = Math.min(Math.max(rawDt, 0), 0.05);
+
+        if (appState === 'title') {
+          menuAngle = normalizeAngle(menuAngle + 1.15 * dt);
+        } else if (appState === 'playing') {
+          updateSimulation(dt);
+        }
+
+        renderScene();
+        notifyFirstFrameReady();
+
+        if (appState === 'playing' || appState === 'title') {
+          rafId = requestAnimationFrame(tick);
+        } else {
+          rafId = null;
+        }
+      }
+
+      /* =====================================================================
+         8. INPUT & UI WIRING
+         ===================================================================== */
+      function pauseGame() {
+        if (appState !== 'playing' || activeAdOverlayOpen) return;
+        stateBeforePause = 'playing';
+        stopLoop();
+        setBodyState('paused');
+        renderScene();
+      }
+
+      function resumeGame() {
+        if (appState !== 'paused') return;
+        SoundFX.playClick();
+        setBodyState(stateBeforePause || 'playing');
+        startLoop();
+      }
+
+      function returnToMenu() {
+        SoundFX.playClick();
+        bossBannerEl.classList.remove('visible');
+        bossBannerEl.hidden = true;
+        setBodyState('title');
+        startLoop();
+      }
+
+      // Pointer / Touch on Canvas
+      canvas.addEventListener('pointerdown', function (e) {
+        if (appState === 'playing') {
+          e.preventDefault();
+          triggerThrow();
+        }
+      });
+
+      canvas.addEventListener('pointermove', function (e) {
+        if (appState === 'title') {
+          const rect = canvas.getBoundingClientRect();
+          const nx = ((e.clientX - rect.left) / Math.max(1, rect.width)) - 0.5;
+          menuPointerTilt = nx * 0.25;
+        }
+      });
+
+      // Keyboard Controls
+      window.addEventListener('keydown', function (e) {
+        if (activeAdOverlayOpen) return;
+        if (e.repeat) return;
+
+        if (appState === 'title') {
+          if (e.code === 'Space' || e.code === 'Enter') {
+            e.preventDefault();
+            startGameFromMenu();
+          }
+          return;
+        }
+
+        if (appState === 'playing') {
+          if (e.code === 'Space' || e.code === 'ArrowUp') {
+            e.preventDefault();
+            triggerThrow();
+          } else if (e.code === 'Escape' || e.code === 'KeyP') {
+            e.preventDefault();
+            pauseGame();
+          }
+          return;
+        }
+
+        if (appState === 'paused') {
+          if (e.code === 'Escape' || e.code === 'KeyP') {
+            e.preventDefault();
+            resumeGame();
+          }
+          return;
+        }
+      });
+
+      // Buttons
+      document.getElementById('btn-play').addEventListener('click', startGameFromMenu);
+
+      document.getElementById('btn-open-levels').addEventListener('click', function () {
+        SoundFX.playClick();
+        stopLoop();
+        buildLevelsGrid();
+        levelsGridEl.scrollTop = 0;
+        setBodyState('levels');
+      });
+
+      document.getElementById('btn-close-levels').addEventListener('click', function () {
+        SoundFX.playClick();
+        setBodyState('title');
+        startLoop();
+      });
+
+      document.getElementById('btn-open-shop').addEventListener('click', function () {
+        SoundFX.playClick();
+        stopLoop();
+        buildShopGrid();
+        weaponGridEl.scrollTop = 0;
+        setBodyState('shop');
+      });
+
+      document.getElementById('btn-close-shop').addEventListener('click', function () {
+        SoundFX.playClick();
+        setBodyState('title');
+        startLoop();
+      });
+
+      for (let t = 0; t < shopTabButtons.length; t++) {
+        shopTabButtons[t].addEventListener('click', function (e) {
+          const nextTab = e.currentTarget.getAttribute('data-shop-tab');
+          if (!nextTab || nextTab === activeShopTab) return;
+          SoundFX.playClick();
+          activeShopTab = nextTab;
+          buildShopGrid();
+          weaponGridEl.scrollTop = 0;
+        });
+      }
+
+      document.getElementById('btn-shop-ad').addEventListener('click', function () {
+        SoundFX.playClick();
+        requestRewardedAd('Watch the full video to earn +50 Coins!', function () {
+          playerData.coins += 50;
+          savePlayerData();
+          updateHud();
+          buildShopGrid();
+        });
+      });
+
+      btnPause.addEventListener('click', function (e) {
+        e.currentTarget.blur();
+        SoundFX.playClick();
+        pauseGame();
+      });
+
+      btnSound.addEventListener('click', function (e) {
+        e.currentTarget.blur();
+        SoundFX.setManualMuted(!SoundFX.isManualMuted());
+        if (SoundFX.isAudioActive()) SoundFX.playClick();
+        updateHud();
+      });
+
+      document.getElementById('btn-resume').addEventListener('click', resumeGame);
+      document.getElementById('btn-pause-menu').addEventListener('click', returnToMenu);
+
+      document.getElementById('btn-next-level').addEventListener('click', function () {
+        SoundFX.playClick();
+        setupLevel(currentLevelNum + 1, false);
+        setBodyState('playing');
+        startLoop();
+      });
+
+      document.getElementById('btn-double-coins').addEventListener('click', function () {
+        if (doubleCoinsUsedThisClear) return;
+        SoundFX.playClick();
+        requestRewardedAd('Watch to double your level clear coins!', function () {
+          doubleCoinsUsedThisClear = true;
+          playerData.coins += lastLevelCoinsEarned;
+          lastLevelCoinsEarned *= 2;
+          lcCoinsEl.textContent = '+' + lastLevelCoinsEarned + ' 🪙';
+          btnDoubleCoins.hidden = true;
+          btnDoubleCoins.disabled = true;
+          savePlayerData();
+          updateHud();
+        });
+      });
+
+      document.getElementById('btn-lc-menu').addEventListener('click', returnToMenu);
+
+      btnSecondChance.addEventListener('click', function () {
+        if (secondChanceUsedThisLevel) return;
+        SoundFX.playClick();
+        requestRewardedAd('Watch to continue this exact level with your stuck knives intact!', function () {
+          reviveSecondChance();
+        });
+      });
+
+      document.getElementById('btn-retry').addEventListener('click', function () {
+        SoundFX.playClick();
+        setupLevel(playerData.currentLevel, true);
+        setBodyState('playing');
+        startLoop();
+      });
+
+      document.getElementById('btn-go-menu').addEventListener('click', returnToMenu);
+
+      window.addEventListener('resize', function () {
+        renderScene();
+      });
+
+      /* =====================================================================
+         9. BOOTSTRAP & YOUTUBE PLAYABLES HOOKS
+         ===================================================================== */
+      async function bootstrap() {
+        const yt = getYtGame();
+        if (yt && yt.system) {
+          if (typeof yt.system.onPause === 'function') {
+            yt.system.onPause(function () {
+              if (appState === 'playing') {
+                pauseGame();
+              } else {
+                stopLoop();
+              }
+            });
+          }
+          if (typeof yt.system.onResume === 'function') {
+            yt.system.onResume(function () {
+              if (appState === 'paused') {
+                resumeGame();
+              } else if (appState === 'title' || appState === 'playing') {
+                startLoop();
+              }
+            });
+          }
+          if (typeof yt.system.onAudioEnabledChange === 'function') {
+            yt.system.onAudioEnabledChange(function (isAudioEnabled) {
+              SoundFX.setYtAudioEnabled(isAudioEnabled);
+              updateHud();
+            });
+          }
+          if (typeof yt.system.isAudioEnabled === 'function') {
+            try {
+              SoundFX.setYtAudioEnabled(!!yt.system.isAudioEnabled());
+            } catch (e) {}
+          }
+        }
+
+        await loadPlayerData();
+        applyBackgroundTheme();
+        updateHud();
+
+        // Support ?autostart=1 for instant play testing
+        const params = new URLSearchParams(window.location.search);
+        if (params.get('autostart') === '1') {
+          setupLevel(playerData.currentLevel, true);
+          setBodyState('playing');
+        } else {
+          setBodyState('title');
+        }
+
+        renderScene();
+        notifyFirstFrameReady();
+        notifyGameReady();
+        startLoop();
+      }
+
+      bootstrap();
+    })();
+  </script>
+</body>
+</html>
