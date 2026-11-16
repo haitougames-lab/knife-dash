@@ -9,6 +9,7 @@
   <meta property="og:description" content="Throw knives, slice bonus apples & coins, defeat bosses, and unlock legendary blades in Knife Dash." />
   <meta property="og:type" content="website" />
   <meta name="twitter:card" content="summary_large_image" />
+  <link rel="icon" href="data:," />
   <script src="https://youtube.com" nonce="ytgame"></script>
   <style>
     :root {
@@ -852,7 +853,7 @@
       </section>
 
       <!-- Level Select Overlay -->
-      <section id="levels-overlay" class="overlay modal-backdrop" aria-label="Level Select" aria-hidden="true">
+      <section id="levels-overlay" class="overlay modal-backdrop" aria-label="Level Select">
         <div class="shop-container">
           <div class="shop-header">
             <h2 class="shop-title">LEVELS</h2>
@@ -864,7 +865,7 @@
       </section>
 
       <!-- Weapon, Wood & Background Shop Overlay -->
-      <section id="shop-overlay" class="overlay modal-backdrop" aria-label="Shop" aria-hidden="true">
+      <section id="shop-overlay" class="overlay modal-backdrop" aria-label="Shop">
         <div class="shop-container">
           <div class="shop-header">
             <h2 class="shop-title">SHOP</h2>
@@ -881,7 +882,7 @@
       </section>
 
       <!-- Pause Overlay -->
-      <section id="pause-overlay" class="overlay modal-backdrop" aria-label="Pause Menu" aria-hidden="true">
+      <section id="pause-overlay" class="overlay modal-backdrop" aria-label="Pause Menu">
         <div class="modal-card">
           <h2 class="modal-title">PAUSED</h2>
           <p class="modal-subtitle">Take a breather — your knives are holding steady.</p>
@@ -891,7 +892,7 @@
       </section>
 
       <!-- Level Complete Overlay -->
-      <section id="level-complete-overlay" class="overlay modal-backdrop" aria-label="Level Complete" aria-hidden="true">
+      <section id="level-complete-overlay" class="overlay modal-backdrop" aria-label="Level Complete">
         <div class="modal-card">
           <h2 id="lc-title" class="modal-title">LEVEL 1 CLEARED!</h2>
           <p id="lc-subtitle" class="modal-subtitle">Target shattered cleanly!</p>
@@ -912,7 +913,7 @@
       </section>
 
       <!-- Game Over Overlay -->
-      <section id="gameover-overlay" class="overlay modal-backdrop" aria-label="Game Over" aria-hidden="true">
+      <section id="gameover-overlay" class="overlay modal-backdrop" aria-label="Game Over">
         <div class="modal-card">
           <h2 class="modal-title">GAME OVER</h2>
           <p class="modal-subtitle">Steel clashed against steel!</p>
@@ -937,7 +938,7 @@
       </section>
 
       <!-- Local Rewarded Ad Simulator Modal -->
-      <section id="ad-overlay" class="overlay" aria-label="Rewarded Ad Simulation" aria-hidden="true">
+      <section id="ad-overlay" class="overlay" aria-label="Rewarded Ad Simulation">
         <div class="modal-card">
           <div class="studio-tag">Haitou Games · Rewarded Video</div>
           <h2 class="modal-title">SPONSORED PREVIEW</h2>
@@ -1555,21 +1556,32 @@
         return typeof window.ytgame !== 'undefined' && window.ytgame ? window.ytgame : null;
       }
 
+      function sendYtReadySignals() {
+        if (window.ytgame && window.ytgame.game) {
+          if (!firstFrameSent && typeof window.ytgame.game.firstFrameReady === 'function') {
+            firstFrameSent = true;
+            try { window.ytgame.game.firstFrameReady(); } catch (e) {}
+          }
+          if (!gameReadySent && typeof window.ytgame.game.gameReady === 'function') {
+            gameReadySent = true;
+            try { window.ytgame.game.gameReady(); } catch (e) {}
+          }
+        }
+      }
+
       function notifyFirstFrameReady() {
         if (firstFrameSent) return;
-        firstFrameSent = true;
-        const yt = getYtGame();
-        if (yt && yt.game && typeof yt.game.firstFrameReady === 'function') {
-          try { yt.game.firstFrameReady(); } catch (e) {}
+        if (window.ytgame && window.ytgame.game && typeof window.ytgame.game.firstFrameReady === 'function') {
+          firstFrameSent = true;
+          try { window.ytgame.game.firstFrameReady(); } catch (e) {}
         }
       }
 
       function notifyGameReady() {
         if (gameReadySent) return;
-        gameReadySent = true;
-        const yt = getYtGame();
-        if (yt && yt.game && typeof yt.game.gameReady === 'function') {
-          try { yt.game.gameReady(); } catch (e) {}
+        if (window.ytgame && window.ytgame.game && typeof window.ytgame.game.gameReady === 'function') {
+          gameReadySent = true;
+          try { window.ytgame.game.gameReady(); } catch (e) {}
         }
       }
 
@@ -1587,6 +1599,17 @@
         }
       }
 
+      function loadLocalPlayerDataSync() {
+        let loaded = null;
+        try {
+          const localStr = window.localStorage.getItem(STORAGE_KEY);
+          if (localStr) loaded = JSON.parse(localStr);
+        } catch (e) {}
+        if (loaded) {
+          playerData = mergePlayerData(loaded);
+        }
+      }
+
       async function loadPlayerData() {
         let loaded = null;
         const yt = getYtGame();
@@ -1598,13 +1621,11 @@
             }
           } catch (e) {}
         }
-        if (!loaded) {
-          try {
-            const localStr = window.localStorage.getItem(STORAGE_KEY);
-            if (localStr) loaded = JSON.parse(localStr);
-          } catch (e) {}
+        if (loaded) {
+          playerData = mergePlayerData(loaded);
+        } else {
+          loadLocalPlayerDataSync();
         }
-        playerData = mergePlayerData(loaded);
       }
 
       function reportScore(scoreVal) {
@@ -2366,8 +2387,13 @@
       }
 
       function setOverlayActive(el, active) {
+        if (!active && document.activeElement && el.contains(document.activeElement)) {
+          try { document.activeElement.blur(); } catch (e) {}
+        }
         el.classList.toggle('active', active);
-        el.setAttribute('aria-hidden', active ? 'false' : 'true');
+        if ('inert' in el) {
+          el.inert = !active;
+        }
       }
 
       function syncOverlays() {
@@ -3533,7 +3559,7 @@
       /* =====================================================================
          9. BOOTSTRAP & YOUTUBE PLAYABLES HOOKS
          ===================================================================== */
-      async function bootstrap() {
+      function setupYtSystemHooks() {
         const yt = getYtGame();
         if (yt && yt.system) {
           if (typeof yt.system.onPause === 'function') {
@@ -3566,8 +3592,11 @@
             } catch (e) {}
           }
         }
+      }
 
-        await loadPlayerData();
+      function bootstrap() {
+        setupYtSystemHooks();
+        loadLocalPlayerDataSync();
         applyBackgroundTheme();
         updateHud();
 
@@ -3581,12 +3610,26 @@
         }
 
         renderScene();
-        notifyFirstFrameReady();
-        notifyGameReady();
+        // Immediately notify YouTube Playables SDK without waiting for async loadData()
+        sendYtReadySignals();
         startLoop();
+
+        // Hydrate cloud save in background without blocking firstFrameReady/gameReady
+        loadPlayerData().then(function () {
+          applyBackgroundTheme();
+          updateHud();
+          if (appState === 'levels') buildLevelsGrid();
+          if (appState === 'shop') buildShopGrid();
+          renderScene();
+        }).catch(function () {});
       }
 
-      bootstrap();
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', bootstrap, { once: true });
+      } else {
+        bootstrap();
+      }
+      window.addEventListener('load', sendYtReadySignals, { once: true });
     })();
   </script>
 </body>
